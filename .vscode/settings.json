@@ -1,0 +1,10 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintPath": "pylint",
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "yapf", // or "black" here
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--disable=C0111"
+    ]
+}
