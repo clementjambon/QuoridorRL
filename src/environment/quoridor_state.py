@@ -33,9 +33,9 @@ class QuoridorState:
         self.nb_walls = [0, 0]
 
         # (grid_size - 1)x(grid_size - 1) 2d int8 array to store the wall positions at intersections
-        # 0 stands for empty
-        # 1 stands for horizontal wall
-        # 2 stands for vertical wall
+        # -1 stands for empty
+        # 0 stands for horizontal wall
+        # 0 stands for vertical wall
         self.walls_state = np.full((self.grid_size - 1, self.grid_size - 1),
                                    -1,
                                    dtype=np.int8)
@@ -120,8 +120,12 @@ class QuoridorState:
             self.ufind.find(self.size_wall_grid + 3)
         }
         for offset in self.wall_offsets:
-            potential_position = wall_position
-            potential_position[offset[1]] += offset[0]
+            if offset[1] == 0:
+                potential_position = (wall_position[0] + offset[0],
+                                      wall_position[1])
+            else:
+                potential_position = (wall_position[0],
+                                      wall_position[1] + offset[0])
 
             # Check bounds first
             # 1. with other walls
@@ -154,8 +158,12 @@ class QuoridorState:
         self.walls_state[wall_position] = direction
         # Update the ufind structure accordingly
         for offset in self.wall_offsets:
-            potential_position = wall_position
-            potential_position[offset[1]] += offset[0]
+            if offset[1] == 0:
+                potential_position = (wall_position[0] + offset[0],
+                                      wall_position[1])
+            else:
+                potential_position = (wall_position[0],
+                                      wall_position[1] + offset[0])
 
             tile_current = coords_to_tile(wall_position, self.grid_size - 1)
             # Check bounds first
