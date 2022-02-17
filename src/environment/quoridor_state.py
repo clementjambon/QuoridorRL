@@ -85,6 +85,10 @@ class QuoridorState:
 
     def can_place_wall(self, player_idx: int, wall_position,
                        direction: int) -> bool:
+        # Make sure the target position is in bound
+        print(wall_position)
+        if not is_in_bound(wall_position, self.grid_size - 1):
+            return False
         # Make sure the player has not used all of its walls yet
         if self.nb_walls[player_idx] >= self.max_walls:
             return
@@ -98,7 +102,7 @@ class QuoridorState:
             if wall_position[0] > 0 and self.walls_state[(
                     wall_position[0] - 1, wall_position[1])] == 0:
                 return False
-            if wall_position[0] < self.grid_size - 1 and self.walls_state[(
+            if wall_position[0] < self.grid_size - 2 and self.walls_state[(
                     wall_position[0] + 1, wall_position[1])] == 0:
                 return False
         if direction == 1:
@@ -106,7 +110,7 @@ class QuoridorState:
             if wall_position[1] > 0 and self.walls_state[(
                     wall_position[0], wall_position[1] - 1)] == 1:
                 return False
-            if wall_position[1] < self.grid_size - 1 and self.walls_state[(
+            if wall_position[1] < self.grid_size - 2 and self.walls_state[(
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
