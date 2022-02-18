@@ -1,7 +1,12 @@
+from argparse import Action
+from enum import Enum
 import sys
 import os
 from matplotlib.pyplot import draw
 import pygame as pg
+
+if not pg.font:
+    print("Warning, fonts disabled")
 
 # Required to properly append path (this sets the root folder to /src)
 sys.path.insert(0,
@@ -16,17 +21,55 @@ EMPTY_CELL_COLOR = (204, 190, 171)
 WALL_COLOR = (116, 102, 242)
 PAWN_0_COLOR = (255, 255, 255)
 PAWN_1_COLOR = (0, 0, 0)
+TEXT_COLOR = (10, 10, 10)
 
 # ----------------------------
 # CONSTANTS
 # ----------------------------
-SIZE = WIDTH, HEIGHT = 720, 720
+SIZE = WIDTH, HEIGHT = 720, 900
 FPS = 60
 GRID_SIZE = 9
 CELL_SIZE = 80
 WALL_THICKNESS = 10
 CELL_PADDING = WALL_THICKNESS / 2
 INNER_CELL_SIZE = CELL_SIZE - WALL_THICKNESS
+
+ACTION_DESCRIPTIONS = ["Move pawn", "Add horizontal wall", "Add vertical wall"]
+
+# TODO: make cells subsurfaces of the big cell
+
+
+def handle_click(environment: QuoridorEnv, action_mode: int):
+    mouse_pos = pg.mouse.get_pos()
+    if action_mode == 0:
+        target_position = (mouse_pos[0] // CELL_SIZE,
+                           mouse_pos[1] // CELL_SIZE)
+        environment.move_pawn(target_position)
+    else:
+        target_position = (int((mouse_pos[0] - CELL_SIZE / 2) // CELL_SIZE),
+                           int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
+        direction = 0 if action_mode == 1 else 1
+        environment.add_wall(target_position, direction)
+
+
+def draw_gui(screen, environment: QuoridorEnv, action_mode: int, done: bool):
+    if pg.font:
+        font = pg.font.Font(None, 64)
+        player_text = font.render(
+            f"Player {environment.current_player} is playing", True,
+            TEXT_COLOR)
+        player_text_pos = (0, GRID_SIZE * CELL_SIZE)
+        screen.blit(player_text, player_text_pos)
+
+        action_text = font.render(
+            f"Action: {ACTION_DESCRIPTIONS[action_mode]}", True, TEXT_COLOR)
+        action_text_pos = (0, GRID_SIZE * CELL_SIZE + 64)
+        screen.blit(action_text, action_text_pos)
+
+        if done:
+            done_text = font.render(f"Game is over!", True, TEXT_COLOR)
+            done_text_pos = (0, GRID_SIZE * CELL_SIZE + 64 * 2)
+            screen.blit(done_text, done_text_pos)
 
 
 def draw_board(screen, cell):
@@ -53,11 +96,12 @@ def draw_state(screen, environment: QuoridorEnv, pawn_0, pawn_1,
     # Draw walls
     for i in range(0, GRID_SIZE - 1):
         for j in range(0, GRID_SIZE - 1):
-            # Draw horizontal wall
+            # Draw horizontal wall (i.e along x)
             if (environment.state.walls_state[i, j] == 0):
                 wall_position = (CELL_PADDING + i * CELL_SIZE, CELL_PADDING +
                                  INNER_CELL_SIZE + CELL_SIZE * j)
                 screen.blit(horizontal_wall, wall_position)
+            # Draw vertical wall (i.e along y)
             elif (environment.state.walls_state[i,
                                                 j] == 1):  # Draw vertical wall
                 wall_position = (CELL_PADDING + INNER_CELL_SIZE +
@@ -69,7 +113,10 @@ def main():
 
     # Initialize Quoridor Environment
     environment = QuoridorEnv()
-    environment.add_wall((1, 1), 0)
+    done = False
+
+    # Initialize action mode
+    action_mode = 0
 
     pg.init()
     screen = pg.display.set_mode(SIZE, pg.SCALED)
@@ -123,12 +170,15 @@ def main():
                 rendering = False
             # TODO: handle key down
             elif event.type == pg.MOUSEBUTTONDOWN:
-                pass
+                handle_click(environment, action_mode)
+            elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                action_mode = (action_mode + 1) % 3
         # draw
         screen.blit(background, (0, 0))
         draw_board(screen, cell)
         draw_state(screen, environment, pawn_0, pawn_1, horizontal_wall,
                    vertical_wall)
+        draw_gui(screen, environment, action_mode, done)
         pg.display.flip()
 
     pg.quit()

@@ -2,6 +2,10 @@ def add_offset(position, offset):
     return (position[0] + offset[0], position[1] + offset[1])
 
 
+def get_offset(from_pos, to_pos):
+    return (to_pos[0] - from_pos[0], to_pos[1] - from_pos[1])
+
+
 def is_in_bound(position, side_length: int) -> bool:
     return (position[0] >= 0 and position[1] >= 0 and position[0] < side_length
             and position[1] < side_length)

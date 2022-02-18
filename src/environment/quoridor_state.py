@@ -1,19 +1,31 @@
 import numpy as np
 
-from utils import add_offset, is_in_bound, coords_to_tile
-from utils import UnionFind
+from utils import add_offset, is_in_bound
+from utils import PathFinder
 
 
 class QuoridorState:
 
-    empty_move_offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    # Offsets used if the adjacent cell is not empty
-    occupied_move_offsets = [[(-1, -1), (-1, 1)], [(1, -1), (1, 1)],
-                             [(-1, -1), (1, -1)], [(-1, 1), (1, 1)]]
+    # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
+    direct_offsets = [((-1, 0), [(-1, 0), (-1, -1)], 1),
+                      ((1, 0), [(0, 0), (0, -1)], 1),
+                      ((0, -1), [(0, -1), (-1, -1)], 0),
+                      ((0, 1), [(0, 0), (-1, 0)], 0)]
 
-    # Pairs of (offset, direction) wall offsets that get to connect components
-    # a "direction" offset of 0 means that walls must be aligned in the provided direction
-    wall_offsets = [(-1, 1), (1, 1), (-2, 0), (2, 0)]
+    # Indirect offsets are defined as (pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets)
+    # where wall_offset = (wall_pos_offset, )
+    indirect_offsets = [
+        # Used for hopping over pawn without blocking wall
+        ((-2, 0), (-1, 0), [], [((-2, 0), 1), ((-2, -1), 1)]),
+        ((2, 0), (1, 0), [], [((1, 0), 1), ((1, -1), 1)]),
+        ((0, -1), (0, -1), [], [((0, -2), 0), ((-1, -2), 0)]),
+        ((0, 2), (0, 1), [], [((0, 1), 0), ((-1, 1), 0)]),
+        # Used when there is a blocking wall
+        ((-1, -1), (-1, 0), [((-2, 0), 1), ((-2, -1), 1)], [((0, -1), 0),
+                                                            ((-1, -1), 0)]),
+        ((-1, -1), (0, -1), [((0, -2), 0), ((-1, -2), 0)], [((-1, 0), 1),
+                                                            ((-1, -1), 1)]),
+    ]
 
     def __init__(self, grid_size: int = 9) -> None:
         self.grid_size = grid_size
@@ -28,65 +40,134 @@ class QuoridorState:
         # player positions
         self.player_positions = [(0, self.grid_size // 2),
                                  (self.grid_size - 1, self.grid_size // 2)]
+        # player x_targets (TODO: change this to handle more players)
+        self.x_targets = [self.grid_size - 1, 0]
 
         # number of already placed walls for a given player
         self.nb_walls = [0, 0]
 
         # (grid_size - 1)x(grid_size - 1) 2d int8 array to store the wall positions at intersections
         # -1 stands for empty
-        # 0 stands for horizontal wall
-        # 0 stands for vertical wall
+        # 0 stands for a wall along x
+        # 1 stands for a wall along y
         self.walls_state = np.full((self.grid_size - 1, self.grid_size - 1),
                                    -1,
                                    dtype=np.int8)
 
-        # union-find structure used for valid wall testing
-        # the structure includes all possible walls AND the 4 grid boundaries
-        self.ufind = UnionFind((self.grid_size - 1) * (self.grid_size - 1) + 4)
-        self.size_wall_grid = (self.grid_size - 1) * (self.grid_size - 1)
+        # initialize the pathfinder used to check valid wall placement
+        self.pathfinder = PathFinder(self.grid_size)
 
     def get_opponent(self, player_idx: int) -> int:
         return (player_idx + 1) % self.nb_players
+
+    def get_neighbouring_cells(self, pos):
+        neighbouring_cells = set()
+        if pos[0] > 0:
+            neighbouring_cells.add((pos[0] - 1, pos[1]))
+        if pos[1] > 0:
+            neighbouring_cells.add((pos[0], pos[1] - 1))
+        if pos[0] < self.grid_size - 1:
+            neighbouring_cells.add((pos[0] + 1, pos[1]))
+        if pos[1] < self.grid_size - 1:
+            neighbouring_cells.add((pos[0], pos[1] + 1))
+        return neighbouring_cells
 
     def can_move_player(self, player_idx: int, target_position) -> bool:
         # Make sure the target position is in bound
         if not is_in_bound(target_position, self.grid_size):
             return False
-        # Compute valid targets
-        player_position = self.player_positions[player_idx]
-        valid_targets = set()
-        for i, offset in enumerate(self.empty_move_offsets):
-            potential_target = add_offset(player_position, offset)
-            if is_in_bound(potential_target, self.grid_size):
-                # Check that the corresponding cell is empty
-                if potential_target != self.player_positions[self.get_opponent(
-                        player_idx)]:
-                    valid_targets.add(potential_target)
-                # Otherwise, add all other in-bound targets based of occupied_offsets
-                else:
-                    for occupied_offset in self.occupied_move_offsets[i]:
-                        new_target = add_offset(player_position,
-                                                occupied_offset)
-                        if is_in_bound(new_target, self.grid_size):
-                            valid_targets.add(new_target)
 
-        # Check that the target_position is within valid distance of the player
-        if target_position in valid_targets:
-            return True
-        else:
+        # Make sure the other player is not standing at the target_position
+        if target_position == self.player_positions[self.get_opponent(
+                player_idx)]:
             return False
+        player_pos = self.player_positions[player_idx]
+
+        for pos_offset, wall_offsets, wall_direction in self.direct_offsets:
+            if target_position == add_offset(player_pos, pos_offset):
+                for wall_offset in wall_offsets:
+                    wall_position = add_offset(player_pos, wall_offset)
+                    if is_in_bound(
+                            wall_position, self.grid_size - 1
+                    ) and self.walls_state[wall_position] == wall_direction:
+                        return False
+                return True
+
+        for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in self.indirect_offsets:
+            if target_position == add_offset(
+                    self.player_positions[player_idx],
+                    pos_offset) and self.player_positions[self.get_opponent(
+                        player_idx)] == add_offset(
+                            self.player_positions[player_idx],
+                            opponent_offset):
+
+                found_required_wall = False
+                one_in_bound = False
+                for required_wall_offset, required_wall_direction in required_wall_offsets:
+                    wall_position = add_offset(player_pos,
+                                               required_wall_offset)
+
+                    if is_in_bound(wall_position, self.grid_size - 1):
+                        one_in_bound = True
+                        if self.walls_state[
+                                wall_position] == required_wall_direction:
+                            found_required_wall = True
+                            break
+                        else:
+                            return False
+                if one_in_bound and not found_required_wall:
+                    return False
+
+                for forbidden_wall_offset, forbidden_wall_direction in forbidden_wall_offsets:
+                    wall_position = add_offset(player_pos,
+                                               forbidden_wall_offset)
+                    if is_in_bound(
+                            wall_position,
+                            self.grid_size - 1) and self.walls_state[
+                                wall_position] == forbidden_wall_direction:
+                        return False
+
+                return True
+
+        # # Compute valid targets
+        # player_position = self.player_positions[player_idx]
+        # valid_targets = set()
+        # for i, offset in enumerate(self.empty_move_offsets):
+        #     potential_target = add_offset(player_position, offset)
+        #     potential_wall = add_offset(player_position)
+        #     if is_in_bound(potential_target, self.grid_size):
+        #         # Check that the corresponding cell is empty
+        #         if potential_target != self.player_positions[self.get_opponent(
+        #                 player_idx)]:
+        #             valid_targets.add(potential_target)
+        #         # Otherwise, add all other in-bound targets based of occupied_offsets
+        #         else:
+        #             for occupied_offset in self.occupied_move_offsets[i]:
+        #                 new_target = add_offset(player_position,
+        #                                         occupied_offset)
+        #                 if is_in_bound(new_target, self.grid_size):
+        #                     valid_targets.add(new_target)
+
+        # # Check that the target_position is within valid distance of the player
+        # if target_position in valid_targets:
+        #     return True
+        # else:
+        #     return False
+
+        # TODO: handle walls
+
+        return False
 
     def move_player(self, player_idx: int, target_position) -> None:
         self.player_positions[player_idx] = target_position
 
     def player_win(self, player_idx: int) -> None:
-        target_line = self.grid_size - 1 if player_idx == 0 else 0
-        return (self.player_positions[player_idx][0] == target_line)
+        return (
+            self.player_positions[player_idx][0] == self.x_targets[player_idx])
 
     def can_place_wall(self, player_idx: int, wall_position,
                        direction: int) -> bool:
         # Make sure the target position is in bound
-        print(wall_position)
         if not is_in_bound(wall_position, self.grid_size - 1):
             return False
         # Make sure the player has not used all of its walls yet
@@ -114,45 +195,15 @@ class QuoridorState:
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
-        # Check connected components
-        # this list records the potentially merged cc
-        merged_cc = []
-        boundary_cc = {
-            self.ufind.find(self.size_wall_grid),
-            self.ufind.find(self.size_wall_grid + 1),
-            self.ufind.find(self.size_wall_grid + 2),
-            self.ufind.find(self.size_wall_grid + 3)
-        }
-        for offset in self.wall_offsets:
-            if offset[1] == 0:
-                potential_position = (wall_position[0] + offset[0],
-                                      wall_position[1])
-            else:
-                potential_position = (wall_position[0],
-                                      wall_position[1] + offset[0])
-
-            # Check bounds first
-            # 1. with other walls
-            if is_in_bound(potential_position, self.grid_size - 1):
-                # Connect if walls are "connectable" wall at the potential_position
-                if self.walls_state[potential_position] == (direction +
-                                                            offset[0]) % 2:
-                    tile_potential = coords_to_tile(potential_position,
-                                                    self.grid_size - 1)
-                    merged_cc.append(self.ufind.find(tile_potential))
-            # 2. with the boundaries of the board as well
-            if potential_position[0] == -2:
-                merged_cc.append(self.ufind.find(self.size_wall_grid))
-            if potential_position[1] == -2:
-                merged_cc.append(self.ufind.find(self.size_wall_grid + 1))
-            if potential_position[0] == self.grid_size:
-                merged_cc.append(self.ufind.find(self.size_wall_grid + 2))
-            if potential_position[1] == self.grid_size:
-                merged_cc.append(self.ufind.find(self.size_wall_grid + 3))
-
-        # If it connects twice the boundaries by being placed there, reject the wall
-        if len([i for i in merged_cc if i in boundary_cc]) > 1:
-            return False
+        # Test pathfinding
+        self.walls_state[wall_position] = direction
+        for i in range(self.nb_players):
+            if not self.pathfinder.check_path(self.walls_state,
+                                              self.player_positions[i],
+                                              self.x_targets[i]):
+                self.walls_state[wall_position] = -1
+                return False
+        self.walls_state[wall_position] = -1
 
         return True
 
@@ -160,31 +211,3 @@ class QuoridorState:
                    direction: int) -> None:
         self.nb_walls[player_idx] += 1
         self.walls_state[wall_position] = direction
-        # Update the ufind structure accordingly
-        for offset in self.wall_offsets:
-            if offset[1] == 0:
-                potential_position = (wall_position[0] + offset[0],
-                                      wall_position[1])
-            else:
-                potential_position = (wall_position[0],
-                                      wall_position[1] + offset[0])
-
-            tile_current = coords_to_tile(wall_position, self.grid_size - 1)
-            # Check bounds first
-            # 1. with other walls
-            if is_in_bound(potential_position, self.grid_size - 1):
-                # Connect if walls are "connectable" wall at the potential_position
-                if self.walls_state[potential_position] == (direction +
-                                                            offset[0]) % 2:
-                    tile_potential = coords_to_tile(potential_position,
-                                                    self.grid_size - 1)
-                    self.ufind.union(tile_current, tile_potential)
-            # 2. with the boundaries of the board as well
-            if potential_position[0] == -2:
-                self.ufind.union(self.size_wall_grid, tile_current)
-            if potential_position[1] == -2:
-                self.ufind.union(self.size_wall_grid + 1, tile_current)
-            if potential_position[0] == self.grid_size:
-                self.ufind.union(self.size_wall_grid + 2, tile_current)
-            if potential_position[1] == self.grid_size:
-                self.ufind.union(self.size_wall_grid + 3, tile_current)
