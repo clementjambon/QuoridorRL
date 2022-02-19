@@ -179,12 +179,11 @@ class QuoridorState:
 
         # Test pathfinding i.e make sure he cannot block the opponent from reaching its goal (in practice, he can block himself)
         self.walls[wall_position] = direction
-        opponent_idx = self.get_opponent(player_idx)
-        if not self.pathfinder.check_path(self.walls,
-                                          self.player_positions[opponent_idx],
-                                          self.x_targets[opponent_idx]):
-            self.walls[wall_position] = -1
-            return False
+        for i in range(self.nb_players):
+            if not self.pathfinder.check_path(
+                    self.walls, self.player_positions[i], self.x_targets[i]):
+                self.walls[wall_position] = -1
+                return False
         self.walls[wall_position] = -1
 
         return True
