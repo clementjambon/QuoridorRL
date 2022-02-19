@@ -3,29 +3,48 @@ import numpy as np
 from utils import add_offset, is_in_bound
 from utils import PathFinder
 
+# Offsets are defined as (pos_offset, wall_offsets, wall_direction)
+DIRECT_OFFSETS = [((-1, 0), [(-1, 0), (-1, -1)], 1),
+                  ((1, 0), [(0, 0), (0, -1)], 1),
+                  ((0, -1), [(0, -1), (-1, -1)], 0),
+                  ((0, 1), [(0, 0), (-1, 0)], 0)]
+
+# Indirect offsets are defined as (pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets)
+# # where wall_offset = (wall_pos_offset, wall_direction)
+INDIRECT_OFFSETS = [
+    # Used for hopping over pawn without blocking wall
+    ((-2, 0), (-1, 0), [], [((-2, 0), 1), ((-2, -1), 1)]),
+    ((2, 0), (1, 0), [], [((1, 0), 1), ((1, -1), 1)]),
+    ((0, -2), (0, -1), [], [((0, -2), 0), ((-1, -2), 0)]),
+    ((0, 2), (0, 1), [], [((0, 1), 0), ((-1, 1), 0)]),
+    # Used when there is a blocking wall
+    ((-1, -1), (-1, 0), [((-2, 0), 1), ((-2, -1), 1)], [((-1, -1), 0),
+                                                        ((-1, -1), 1),
+                                                        ((-1, 0), 1)]),
+    ((-1, -1), (0, -1), [((0, -2), 0), ((-1, -2), 0)], [((-1, -1), 1),
+                                                        ((-1, -1), 0),
+                                                        ((0, -1), 0)]),
+    ((1, -1), (0, -1), [((0, -2), 0), ((-1, -2), 0)], [((-1, -1), 0),
+                                                       ((0, -1), 0),
+                                                       ((0, -1), 1)]),
+    ((1, -1), (1, 0), [((1, 0), 1), ((1, -1), 1)], [
+        ((0, -1), 1),
+        ((0, 0), 1),
+        ((0, -1), 0),
+    ]),
+    ((1, 1), (1, 0), [((1, 0), 1), ((1, -1), 1)], [((0, -1), 1), ((0, 0), 1),
+                                                   ((0, 0), 0)]),
+    ((1, 1), (0, 1), [((-1, 1), 0), ((0, 1), 0)], [((-1, 0), 0), ((0, 0), 0),
+                                                   ((0, 0), 1)]),
+    ((-1, 1), (0, 1), [((-1, 1), 0), ((0, 1), 0)], [((-1, 0), 0), ((0, 0), 0),
+                                                    ((-1, 0), 1)]),
+    ((-1, 1), (-1, 0), [((-2, 0), 1), ((-2, -1), 1)], [((-1, 0), 0),
+                                                       ((-1, -1), 1),
+                                                       ((-1, 0), 1)])
+]
+
 
 class QuoridorState:
-
-    # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
-    direct_offsets = [((-1, 0), [(-1, 0), (-1, -1)], 1),
-                      ((1, 0), [(0, 0), (0, -1)], 1),
-                      ((0, -1), [(0, -1), (-1, -1)], 0),
-                      ((0, 1), [(0, 0), (-1, 0)], 0)]
-
-    # Indirect offsets are defined as (pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets)
-    # where wall_offset = (wall_pos_offset, )
-    indirect_offsets = [
-        # Used for hopping over pawn without blocking wall
-        ((-2, 0), (-1, 0), [], [((-2, 0), 1), ((-2, -1), 1)]),
-        ((2, 0), (1, 0), [], [((1, 0), 1), ((1, -1), 1)]),
-        ((0, -1), (0, -1), [], [((0, -2), 0), ((-1, -2), 0)]),
-        ((0, 2), (0, 1), [], [((0, 1), 0), ((-1, 1), 0)]),
-        # Used when there is a blocking wall
-        ((-1, -1), (-1, 0), [((-2, 0), 1), ((-2, -1), 1)], [((0, -1), 0),
-                                                            ((-1, -1), 0)]),
-        ((-1, -1), (0, -1), [((0, -2), 0), ((-1, -2), 0)], [((-1, 0), 1),
-                                                            ((-1, -1), 1)]),
-    ]
 
     def __init__(self, grid_size: int = 9) -> None:
         self.grid_size = grid_size
@@ -83,7 +102,8 @@ class QuoridorState:
             return False
         player_pos = self.player_positions[player_idx]
 
-        for pos_offset, wall_offsets, wall_direction in self.direct_offsets:
+        # Check direct moves
+        for pos_offset, wall_offsets, wall_direction in DIRECT_OFFSETS:
             if target_position == add_offset(player_pos, pos_offset):
                 for wall_offset in wall_offsets:
                     wall_position = add_offset(player_pos, wall_offset)
@@ -93,7 +113,8 @@ class QuoridorState:
                         return False
                 return True
 
-        for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in self.indirect_offsets:
+        # Check moves with hopping
+        for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in INDIRECT_OFFSETS:
             if target_position == add_offset(
                     self.player_positions[player_idx],
                     pos_offset) and self.player_positions[self.get_opponent(
@@ -128,33 +149,6 @@ class QuoridorState:
                         return False
 
                 return True
-
-        # # Compute valid targets
-        # player_position = self.player_positions[player_idx]
-        # valid_targets = set()
-        # for i, offset in enumerate(self.empty_move_offsets):
-        #     potential_target = add_offset(player_position, offset)
-        #     potential_wall = add_offset(player_position)
-        #     if is_in_bound(potential_target, self.grid_size):
-        #         # Check that the corresponding cell is empty
-        #         if potential_target != self.player_positions[self.get_opponent(
-        #                 player_idx)]:
-        #             valid_targets.add(potential_target)
-        #         # Otherwise, add all other in-bound targets based of occupied_offsets
-        #         else:
-        #             for occupied_offset in self.occupied_move_offsets[i]:
-        #                 new_target = add_offset(player_position,
-        #                                         occupied_offset)
-        #                 if is_in_bound(new_target, self.grid_size):
-        #                     valid_targets.add(new_target)
-
-        # # Check that the target_position is within valid distance of the player
-        # if target_position in valid_targets:
-        #     return True
-        # else:
-        #     return False
-
-        # TODO: handle walls
 
         return False
 
