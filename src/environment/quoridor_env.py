@@ -6,7 +6,6 @@ from environment.quoridor_state import QuoridorState
 # ENVIRONMENT VARIABLES
 # ----------------------------
 
-GRID_SIZE = 9
 NB_PLAYERS = 2
 
 
@@ -15,11 +14,12 @@ NB_PLAYERS = 2
 # ----------------------------
 class QuoridorEnv:
 
-    def __init__(self) -> None:
+    def __init__(self, grid_size=9) -> None:
         super().__init__()
 
         # create a Quoridor state
-        self.state = QuoridorState(GRID_SIZE)
+        self.grid_size = grid_size
+        self.state = QuoridorState(self.grid_size)
         self.current_player = 0
         self.done = False
 
