@@ -16,15 +16,29 @@ from interactive import draw_gui, draw_board, draw_state
 
 def handle_click(environment: QuoridorEnv, action_mode: int):
     mouse_pos = pg.mouse.get_pos()
+    action_successful = False
     if action_mode == 0:
         target_position = (mouse_pos[0] // CELL_SIZE,
                            mouse_pos[1] // CELL_SIZE)
-        environment.move_pawn(target_position)
+        action_successful = environment.move_pawn(target_position)
     else:
         target_position = (int((mouse_pos[0] - CELL_SIZE / 2) // CELL_SIZE),
                            int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
         direction = 0 if action_mode == 1 else 1
-        environment.add_wall(target_position, direction)
+        action_successful = environment.add_wall(target_position, direction)
+
+    # DEBUG
+    # print the set of actions that the new player can take
+    if action_successful:
+        possible_actions = environment.state.get_possible_actions(
+            environment.current_player)
+        possible_actions_str = [
+            action.to_string() for action in possible_actions
+        ]
+
+        print(
+            f"Debug: possible actions for player {environment.current_player} are {possible_actions_str}"
+        )
 
 
 def main():

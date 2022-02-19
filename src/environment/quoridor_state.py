@@ -1,4 +1,5 @@
 import numpy as np
+from environment.quoridor_action import MoveAction, WallAction
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
@@ -46,7 +47,7 @@ INDIRECT_OFFSETS = [
 
 class QuoridorState:
 
-    def __init__(self, grid_size: int = 9) -> None:
+    def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
         self.grid_size = grid_size
         # pairs used for wall tiling
         self.pairs = np.array([(i, j) for i in range(self.grid_size - 1)
@@ -54,7 +55,7 @@ class QuoridorState:
 
         # TODO: "de-hardcode" this!
         self.nb_players = 2
-        self.max_walls = 10  # the maximum number of walls per player
+        self.max_walls = max_walls  # the maximum number of walls per player
 
         # player positions
         self.player_positions = [(0, self.grid_size // 2),
@@ -69,27 +70,15 @@ class QuoridorState:
         # -1 stands for empty
         # 0 stands for a wall along x
         # 1 stands for a wall along y
-        self.walls_state = np.full((self.grid_size - 1, self.grid_size - 1),
-                                   -1,
-                                   dtype=np.int8)
+        self.walls = np.full((self.grid_size - 1, self.grid_size - 1),
+                             -1,
+                             dtype=np.int8)
 
         # initialize the pathfinder used to check valid wall placement
         self.pathfinder = PathFinder(self.grid_size)
 
     def get_opponent(self, player_idx: int) -> int:
         return (player_idx + 1) % self.nb_players
-
-    def get_neighbouring_cells(self, pos):
-        neighbouring_cells = set()
-        if pos[0] > 0:
-            neighbouring_cells.add((pos[0] - 1, pos[1]))
-        if pos[1] > 0:
-            neighbouring_cells.add((pos[0], pos[1] - 1))
-        if pos[0] < self.grid_size - 1:
-            neighbouring_cells.add((pos[0] + 1, pos[1]))
-        if pos[1] < self.grid_size - 1:
-            neighbouring_cells.add((pos[0], pos[1] + 1))
-        return neighbouring_cells
 
     def can_move_player(self, player_idx: int, target_position) -> bool:
         # Make sure the target position is in bound
@@ -108,8 +97,8 @@ class QuoridorState:
                 for wall_offset in wall_offsets:
                     wall_position = add_offset(player_pos, wall_offset)
                     if is_in_bound(
-                            wall_position, self.grid_size - 1
-                    ) and self.walls_state[wall_position] == wall_direction:
+                            wall_position, self.grid_size -
+                            1) and self.walls[wall_position] == wall_direction:
                         return False
                 return True
 
@@ -130,7 +119,7 @@ class QuoridorState:
 
                     if is_in_bound(wall_position, self.grid_size - 1):
                         one_in_bound = True
-                        if self.walls_state[
+                        if self.walls[
                                 wall_position] == required_wall_direction:
                             found_required_wall = True
                             break
@@ -143,8 +132,7 @@ class QuoridorState:
                     wall_position = add_offset(player_pos,
                                                forbidden_wall_offset)
                     if is_in_bound(
-                            wall_position,
-                            self.grid_size - 1) and self.walls_state[
+                            wall_position, self.grid_size - 1) and self.walls[
                                 wall_position] == forbidden_wall_direction:
                         return False
 
@@ -168,24 +156,24 @@ class QuoridorState:
         if self.nb_walls[player_idx] >= self.max_walls:
             return
         # Make sure the intersection is not already used by a wall
-        if self.walls_state[wall_position] != -1:
+        if self.walls[wall_position] != -1:
             return False
 
         # Check potential intersections
         if direction == 0:
             # One cannot place walls if there is already a wall of the same direction in the axis-aligned adjacent intersections
-            if wall_position[0] > 0 and self.walls_state[(
-                    wall_position[0] - 1, wall_position[1])] == 0:
+            if wall_position[0] > 0 and self.walls[(wall_position[0] - 1,
+                                                    wall_position[1])] == 0:
                 return False
-            if wall_position[0] < self.grid_size - 2 and self.walls_state[(
+            if wall_position[0] < self.grid_size - 2 and self.walls[(
                     wall_position[0] + 1, wall_position[1])] == 0:
                 return False
         if direction == 1:
             # One cannot place walls if there is already a wall of the same direction in the axis-aligned adjacent intersections
-            if wall_position[1] > 0 and self.walls_state[(
+            if wall_position[1] > 0 and self.walls[(
                     wall_position[0], wall_position[1] - 1)] == 1:
                 return False
-            if wall_position[1] < self.grid_size - 2 and self.walls_state[(
+            if wall_position[1] < self.grid_size - 2 and self.walls[(
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
@@ -204,4 +192,82 @@ class QuoridorState:
     def place_wall(self, player_idx: int, wall_position,
                    direction: int) -> None:
         self.nb_walls[player_idx] += 1
-        self.walls_state[wall_position] = direction
+        self.walls[wall_position] = direction
+
+    # Returns the set of possible actions that the requested player can take
+    def get_possible_actions(self, player_idx: int):
+        possible_actions = []
+
+        player_pos = self.player_positions[player_idx]
+
+        # If the player has not used all of its walls, check the walls he can place
+        # Note: in practice, this is redundant but it prevents from looping
+        if self.nb_walls[player_idx] < self.max_walls:
+            for i in range(self.grid_size - 1):
+                for j in range(self.grid_size - 1):
+                    for direction in range(2):
+                        if self.can_place_wall(player_idx, (i, j), direction):
+                            possible_actions.append(
+                                WallAction((i, j), direction))
+
+        # Check the move actions the player can perform
+        # 1. direct moves
+        for pos_offset, wall_offsets, wall_direction in DIRECT_OFFSETS:
+            target_position = add_offset(player_pos, pos_offset)
+            if is_in_bound(
+                    target_position, self.grid_size) and self.player_positions[
+                        self.get_opponent(player_idx)] != target_position:
+                satisfy_walls = True
+                for wall_offset in wall_offsets:
+                    wall_position = add_offset(player_pos, wall_offset)
+                    if is_in_bound(
+                            wall_position, self.grid_size -
+                            1) and self.walls[wall_position] == wall_direction:
+                        satisfy_walls = False
+                        break
+                if satisfy_walls:
+                    possible_actions.append(
+                        MoveAction(target_position, player_idx))
+
+        # 1. moves with hopping
+        for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in INDIRECT_OFFSETS:
+            target_position = add_offset(player_pos, pos_offset)
+            if is_in_bound(target_position,
+                           self.grid_size) and self.player_positions[
+                               self.get_opponent(player_idx)] == add_offset(
+                                   self.player_positions[player_idx],
+                                   opponent_offset):
+
+                found_required_wall = False
+                one_in_bound = False
+                for required_wall_offset, required_wall_direction in required_wall_offsets:
+                    wall_position = add_offset(player_pos,
+                                               required_wall_offset)
+
+                    if is_in_bound(wall_position, self.grid_size - 1):
+                        one_in_bound = True
+                        if self.walls[
+                                wall_position] == required_wall_direction:
+                            found_required_wall = True
+                            break
+                        else:
+                            break
+                if one_in_bound and not found_required_wall:
+                    break
+
+                satisfy_walls = True
+                for forbidden_wall_offset, forbidden_wall_direction in forbidden_wall_offsets:
+                    wall_position = add_offset(player_pos,
+                                               forbidden_wall_offset)
+                    if is_in_bound(
+                            wall_position, self.grid_size - 1) and self.walls[
+                                wall_position] == forbidden_wall_direction:
+                        satisfy_walls = False
+                        break
+
+                if satisfy_walls:
+                    possible_actions.append(
+                        MoveAction(target_position, player_idx))
+
+        # Return the full list of actions
+        return possible_actions

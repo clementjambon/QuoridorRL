@@ -60,9 +60,8 @@ def draw_state(screen, environment: QuoridorEnv, pawn_0, pawn_1,
     for i in range(0, GRID_SIZE - 1):
         for j in range(0, GRID_SIZE - 1):
             # Draw horizontal wall (i.e along x)
-            if (environment.state.walls_state[i, j] == 0):
+            if (environment.state.walls[i, j] == 0):
                 draw_horizontal_wall(screen, horizontal_wall, i, j)
             # Draw vertical wall (i.e along y)
-            elif (environment.state.walls_state[i,
-                                                j] == 1):  # Draw vertical wall
+            elif (environment.state.walls[i, j] == 1):  # Draw vertical wall
                 draw_vertical_wall(screen, vertical_wall, i, j)

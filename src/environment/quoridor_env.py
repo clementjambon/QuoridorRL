@@ -23,6 +23,7 @@ class QuoridorEnv:
         self.current_player = 0
         self.done = False
 
+    # Returns True if the action was taken, False otherwise
     def move_pawn(self, target_position) -> bool:
         if self.state.can_move_player(self.current_player, target_position):
             # Move player
@@ -32,11 +33,16 @@ class QuoridorEnv:
             # Update current player
             self.current_player = (self.current_player + 1) % NB_PLAYERS
 
+            return True
+
         else:
             print(
                 f"QuoridorEnv: cannot move player {self.current_player} to target position {target_position}"
             )
 
+            return False
+
+    # Returns True if the action was taken, False otherwise
     def add_wall(self, target_position, direction: int) -> bool:
         if self.state.can_place_wall(self.current_player, target_position,
                                      direction):
@@ -48,7 +54,11 @@ class QuoridorEnv:
             # Update current player
             self.current_player = (self.current_player + 1) % NB_PLAYERS
 
+            return True
+
         else:
             print(
                 f"QuoridorEnv: cannot place wall for player {self.current_player} to target position {target_position} and direction {direction}"
             )
+
+            return False
