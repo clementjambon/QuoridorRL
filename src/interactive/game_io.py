@@ -10,7 +10,7 @@ sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from environment import QuoridorEnv, INDIRECT_OFFSETS
-from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
+from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR, MAX_WALLS
 from interactive import draw_gui, draw_board, draw_state
 
 
@@ -44,7 +44,7 @@ def handle_click(environment: QuoridorEnv, action_mode: int):
 def main():
 
     # Initialize Quoridor Environment
-    environment = QuoridorEnv(grid_size=GRID_SIZE)
+    environment = QuoridorEnv(grid_size=GRID_SIZE, max_walls=MAX_WALLS)
 
     # Initialize action mode
     action_mode = 0

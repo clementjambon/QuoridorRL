@@ -5,8 +5,9 @@ from interactive import INNER_CELL_SIZE, WALL_THICKNESS, CELL_SIZE, CELL_PADDING
 from utils import add_offset, is_in_bound
 
 # ----------------------------
-# DEBUG
+# DEBUG ONLY
 # ----------------------------
+
 DEBUG_PLAYER_COLOR = (0, 0, 0)
 DEBUG_OPPONENT_COLOR = (255, 255, 255)
 DEBUG_TARGET_COLOR = (0, 0, 255)
@@ -14,7 +15,14 @@ REQUIRED_WALLS_COLOR = (0, 0, 255)
 FORBIDDEN_WALLS_COLOR = (255, 0, 0)
 
 
-def draw_debug_offsets(screen, player_pos, offset_idx):
+def draw_debug_offsets(screen, player_pos: tuple[int, int], offset_idx: int):
+    """Draws an offset scheme from the INDIRECT_OFFSETS used in QuoridorState
+
+    Args:
+        screen (_type_): _description_
+        player_pos (tuple[int, int]): 
+        offset_idx (_type_): index of the offset to visualize (in practice between 0 and 11)
+    """
     # Player debug pawn
     debug_player_pawn = pg.Surface((INNER_CELL_SIZE, INNER_CELL_SIZE))
     debug_player_pawn = debug_player_pawn.convert()

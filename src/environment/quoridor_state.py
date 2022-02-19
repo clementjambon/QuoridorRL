@@ -1,5 +1,5 @@
 import numpy as np
-from environment.quoridor_action import MoveAction, WallAction
+from environment.quoridor_action import MoveAction, QuoridorAction, WallAction
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
@@ -48,12 +48,16 @@ INDIRECT_OFFSETS = [
 class QuoridorState:
 
     def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
-        self.grid_size = grid_size
-        # pairs used for wall tiling
-        self.pairs = np.array([(i, j) for i in range(self.grid_size - 1)
-                               for j in range(self.grid_size - 1)])
+        """ Initializes a Quoridor game state
 
-        # TODO: "de-hardcode" this!
+        Args:
+            grid_size (int, optional): the size of the grid. Defaults to 9.
+            max_walls (int, optional): the maximum number of walls a user can use. Defaults to 10.
+        """
+
+        self.grid_size = grid_size
+
+        # TODO: "de-hardcode" this! (for a 4 player game)
         self.nb_players = 2
         self.max_walls = max_walls  # the maximum number of walls per player
 
@@ -78,9 +82,27 @@ class QuoridorState:
         self.pathfinder = PathFinder(self.grid_size)
 
     def get_opponent(self, player_idx: int) -> int:
+        """Returns the opponent of the provided player
+
+        Args:
+            player_idx (int): index of the player
+
+        Returns:
+            int: index of its opponent
+        """
         return (player_idx + 1) % self.nb_players
 
-    def can_move_player(self, player_idx: int, target_position) -> bool:
+    def can_move_player(self, player_idx: int,
+                        target_position: tuple[int, int]) -> bool:
+        """Checks that a given player can move in a provided position
+
+        Args:
+            player_idx (int): index of the player
+            target_position (_type_): targeted position
+
+        Returns:
+            bool: True if the move is valid, False otherwise
+        """
         # Make sure the target position is in bound
         if not is_in_bound(target_position, self.grid_size):
             return False
@@ -140,15 +162,40 @@ class QuoridorState:
 
         return False
 
-    def move_player(self, player_idx: int, target_position) -> None:
+    def move_player(self, player_idx: int,
+                    target_position: tuple[int, int]) -> None:
+        """Moves a player in a provided position
+
+        Args:
+            player_idx (int): index of the player
+            target_position (_type_): targeted position
+        """
         self.player_positions[player_idx] = target_position
 
-    def player_win(self, player_idx: int) -> None:
+    def player_win(self, player_idx: int) -> bool:
+        """Checks whether the provided player has won or not
+
+        Args:
+            player_idx (int): index of the player
+
+        Returns:
+            bool: True if the player has won, False otherwise
+        """
         return (
             self.player_positions[player_idx][0] == self.x_targets[player_idx])
 
-    def can_place_wall(self, player_idx: int, wall_position,
-                       direction: int) -> bool:
+    def can_add_wall(self, player_idx: int, wall_position: tuple[int, int],
+                     direction: int) -> bool:
+        """Checks that a given player can add a wall
+
+        Args:
+            player_idx (int): index of the player
+            wall_position (_type_): position of the wall
+            direction (int): direction of the wall
+
+        Returns:
+            bool: True if the wall can be added, False otherwise
+        """
         # Make sure the target position is in bound
         if not is_in_bound(wall_position, self.grid_size - 1):
             return False
@@ -188,13 +235,28 @@ class QuoridorState:
 
         return True
 
-    def place_wall(self, player_idx: int, wall_position,
-                   direction: int) -> None:
+    def add_wall(self, player_idx: int, wall_position: tuple[int, int],
+                 direction: int) -> None:
+        """Adds a wall requested by a specific player
+
+        Args:
+            player_idx (int): index of the player
+            wall_position (_type_): position of the wall
+            direction (int): direction of the wall
+        """
         self.nb_walls[player_idx] += 1
         self.walls[wall_position] = direction
 
     # Returns the set of possible actions that the requested player can take
-    def get_possible_actions(self, player_idx: int):
+    def get_possible_actions(self, player_idx: int) -> list[QuoridorAction]:
+        """Returns a list with all the actions a player can take
+
+        Args:
+            player_idx (int): index of the player
+
+        Returns:
+            list[QuoridorAction]: list of actions (either MoveAction or WallAction)
+        """
         possible_actions = []
 
         player_pos = self.player_positions[player_idx]
@@ -205,7 +267,7 @@ class QuoridorState:
             for i in range(self.grid_size - 1):
                 for j in range(self.grid_size - 1):
                     for direction in range(2):
-                        if self.can_place_wall(player_idx, (i, j), direction):
+                        if self.can_add_wall(player_idx, (i, j), direction):
                             possible_actions.append(
                                 WallAction((i, j), direction))
 

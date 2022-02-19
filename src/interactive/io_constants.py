@@ -18,9 +18,10 @@ PAWN_1_COLOR = (0, 0, 0)
 TEXT_COLOR = (10, 10, 10)
 
 # ----------------------------
-# FAME PARAMETERS
+# GAME PARAMETERS
 # ----------------------------
-GRID_SIZE = 9
+GRID_SIZE = 5
+MAX_WALLS = 10  # maximum number of walls a user can use
 
 # ----------------------------
 # TEXT

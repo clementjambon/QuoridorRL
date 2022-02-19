@@ -1,4 +1,6 @@
 class QuoridorAction:
+    """Interface for Quoridor actions
+    """
 
     def __init__(self) -> None:
         pass
@@ -7,6 +9,9 @@ class QuoridorAction:
         pass
 
 
+# to_string implementations follow the notations described in
+# https://en.wikipedia.org/wiki/Quoridor#Notation
+
 # TODO: extand this in case of bigger grid_size
 XGRAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 YGRAD = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
@@ -14,6 +19,8 @@ DIRGRAD = ["h", "v"]
 
 
 class MoveAction(QuoridorAction):
+    """Action for pawn movement
+    """
 
     def __init__(self, player_pos, player_idx: int) -> None:
         super().__init__()
@@ -25,6 +32,8 @@ class MoveAction(QuoridorAction):
 
 
 class WallAction(QuoridorAction):
+    """Action for wall placement
+    """
 
     def __init__(self, wall_position, wall_direction: int) -> None:
         super().__init__()

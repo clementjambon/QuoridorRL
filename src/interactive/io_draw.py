@@ -3,7 +3,8 @@ from environment import QuoridorEnv
 import pygame as pg
 
 
-def draw_gui(screen, environment: QuoridorEnv, action_mode: int, done: bool):
+def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
+             done: bool):
     if pg.font:
         font = pg.font.Font(None, 64)
         player_text = font.render(
@@ -23,7 +24,7 @@ def draw_gui(screen, environment: QuoridorEnv, action_mode: int, done: bool):
             screen.blit(done_text, done_text_pos)
 
 
-def draw_board(screen, cell):
+def draw_board(screen: pg.Surface, cell: pg.Surface):
     for i in range(GRID_SIZE):
         for j in range(GRID_SIZE):
             pixel_coord = (i * CELL_SIZE + CELL_PADDING,
@@ -31,20 +32,23 @@ def draw_board(screen, cell):
             screen.blit(cell, pixel_coord)
 
 
-def draw_horizontal_wall(screen, horizontal_wall, i, j):
+def draw_horizontal_wall(screen: pg.Surface, horizontal_wall: pg.Surface,
+                         i: int, j: int):
     wall_position = (CELL_PADDING + i * CELL_SIZE,
                      CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * j)
     screen.blit(horizontal_wall, wall_position)
 
 
-def draw_vertical_wall(screen, vertical_wall, i, j):
+def draw_vertical_wall(screen: pg.Surface, vertical_wall: pg.Surface, i: int,
+                       j: int):
     wall_position = (CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * i,
                      CELL_PADDING + j * CELL_SIZE)
     screen.blit(vertical_wall, wall_position)
 
 
-def draw_state(screen, environment: QuoridorEnv, pawn_0, pawn_1,
-               horizontal_wall, vertical_wall):
+def draw_state(screen, environment: QuoridorEnv, pawn_0: pg.Surface,
+               pawn_1: pg.Surface, horizontal_wall: pg.Surface,
+               vertical_wall: pg.Surface):
     # Draw pawn 0
     pawn_0_position = environment.state.player_positions[0]
     pawn_0_position = (pawn_0_position[0] * CELL_SIZE + CELL_PADDING,
