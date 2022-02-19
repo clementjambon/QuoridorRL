@@ -4,7 +4,7 @@ import pygame as pg
 
 
 def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
-             done: bool):
+             done: bool) -> None:
     if pg.font:
         font = pg.font.Font(None, 64)
         player_text = font.render(
@@ -19,12 +19,14 @@ def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
         screen.blit(action_text, action_text_pos)
 
         if done:
-            done_text = font.render("Game is over!", True, TEXT_COLOR)
+            done_text = font.render(
+                f"Game is over: player {environment.state.get_opponent(environment.current_player)} won!",
+                True, TEXT_COLOR)
             done_text_pos = (0, GRID_SIZE * CELL_SIZE + 64 * 2)
             screen.blit(done_text, done_text_pos)
 
 
-def draw_board(screen: pg.Surface, cell: pg.Surface):
+def draw_board(screen: pg.Surface, cell: pg.Surface) -> None:
     for i in range(GRID_SIZE):
         for j in range(GRID_SIZE):
             pixel_coord = (i * CELL_SIZE + CELL_PADDING,
@@ -33,14 +35,14 @@ def draw_board(screen: pg.Surface, cell: pg.Surface):
 
 
 def draw_horizontal_wall(screen: pg.Surface, horizontal_wall: pg.Surface,
-                         i: int, j: int):
+                         i: int, j: int) -> None:
     wall_position = (CELL_PADDING + i * CELL_SIZE,
                      CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * j)
     screen.blit(horizontal_wall, wall_position)
 
 
 def draw_vertical_wall(screen: pg.Surface, vertical_wall: pg.Surface, i: int,
-                       j: int):
+                       j: int) -> None:
     wall_position = (CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * i,
                      CELL_PADDING + j * CELL_SIZE)
     screen.blit(vertical_wall, wall_position)
@@ -48,7 +50,7 @@ def draw_vertical_wall(screen: pg.Surface, vertical_wall: pg.Surface, i: int,
 
 def draw_state(screen, environment: QuoridorEnv, pawn_0: pg.Surface,
                pawn_1: pg.Surface, horizontal_wall: pg.Surface,
-               vertical_wall: pg.Surface):
+               vertical_wall: pg.Surface) -> None:
     # Draw pawn 0
     pawn_0_position = environment.state.player_positions[0]
     pawn_0_position = (pawn_0_position[0] * CELL_SIZE + CELL_PADDING,

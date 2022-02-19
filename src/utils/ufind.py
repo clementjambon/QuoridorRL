@@ -1,3 +1,8 @@
+# ----------------------------
+# DEPRECATED
+# ----------------------------
+
+
 # Basic union-find structure with parents flattening for O(1) queries
 class UnionFind:
 

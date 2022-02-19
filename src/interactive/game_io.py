@@ -14,7 +14,11 @@ from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, C
 from interactive import draw_gui, draw_board, draw_state
 
 
-def handle_click(environment: QuoridorEnv, action_mode: int):
+def handle_click(environment: QuoridorEnv, action_mode: int) -> None:
+    # Prevents players from taking actions if the game is over
+    if environment.done:
+        return None
+
     mouse_pos = pg.mouse.get_pos()
     action_successful = False
     if action_mode == 0:
