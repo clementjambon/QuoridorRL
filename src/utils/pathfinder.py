@@ -38,8 +38,6 @@ class PathFinder:
         if pos[1] < self.grid_size - 1:
             wall_1 = (pos[0] - 1, pos[1])
             wall_2 = (pos[0], pos[1])
-            print(wall_1)
-            print(wall_2)
             if (walls[wall_1] != 0 if is_in_bound(wall_1, self.grid_size - 1)
                     else True) and (walls[wall_2] != 0 if is_in_bound(
                         wall_2, self.grid_size - 1) else True):
@@ -64,16 +62,16 @@ class PathFinder:
             for neighbour in neighbours:
                 if seen[neighbour] != 1:
                     if neighbour[0] == x_target:
-                        print(
-                            f"PathFinder: path found from {player_pos} to {neighbour}"
-                        )
+                        # print(
+                        #     f"PathFinder: path found from {player_pos} to {neighbour}"
+                        # )
                         return True
                     else:
                         cost = self.manhattan_distance(
                             player_pos,
                             neighbour) + abs(neighbour[0] - x_target)
                         unseen.put((cost, neighbour))
-        print(
-            f"PathFinder: path NOT found from {player_pos} to {x_target} x_target"
-        )
+        # print(
+        #     f"PathFinder: path NOT found from {player_pos} to {x_target} x_target"
+        # )
         return False
