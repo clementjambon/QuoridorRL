@@ -10,9 +10,8 @@ sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from environment import QuoridorEnv, INDIRECT_OFFSETS
-from utils import add_offset, is_in_bound
 from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
-from interactive import draw_horizontal_wall, draw_vertical_wall, draw_debug_offsets, draw_gui, draw_board, draw_state
+from interactive import draw_gui, draw_board, draw_state
 
 
 def handle_click(environment: QuoridorEnv, action_mode: int):
@@ -32,7 +31,6 @@ def main():
 
     # Initialize Quoridor Environment
     environment = QuoridorEnv(grid_size=GRID_SIZE)
-    done = False
 
     # Initialize action mode
     action_mode = 0
@@ -98,7 +96,7 @@ def main():
         draw_state(screen, environment, pawn_0, pawn_1, horizontal_wall,
                    vertical_wall)
         #draw_debug_offsets(screen, (5, 5), 11)
-        draw_gui(screen, environment, action_mode, done)
+        draw_gui(screen, environment, action_mode, environment.done)
         pg.display.flip()
 
     pg.quit()
