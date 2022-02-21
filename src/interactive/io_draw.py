@@ -18,6 +18,12 @@ def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
         action_text_pos = (0, GRID_SIZE * CELL_SIZE + 64)
         screen.blit(action_text, action_text_pos)
 
+        command_font =  pg.font.Font(None, 35)
+        command_text = command_font.render(
+            f"Command: click on space bar to change action mode", True, (128, 128, 128))
+        command_text_pos = (0, GRID_SIZE * CELL_SIZE + 120 )
+        screen.blit(command_text, command_text_pos)
+
         if done:
             done_text = font.render(
                 f"Game is over: player {environment.state.get_opponent(environment.current_player)} won!",

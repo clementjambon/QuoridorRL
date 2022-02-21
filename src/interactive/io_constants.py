@@ -1,9 +1,9 @@
 # ----------------------------
 # DIMENSIONS
 # ----------------------------
-SIZE = WIDTH, HEIGHT = 720, 900
+SIZE = WIDTH, HEIGHT = 720, 700
 FPS = 60
-CELL_SIZE = 80
+CELL_SIZE = 60
 WALL_THICKNESS = 10
 CELL_PADDING = WALL_THICKNESS / 2
 INNER_CELL_SIZE = CELL_SIZE - WALL_THICKNESS
@@ -20,7 +20,7 @@ TEXT_COLOR = (10, 10, 10)
 # ----------------------------
 # GAME PARAMETERS
 # ----------------------------
-GRID_SIZE = 5
+GRID_SIZE = 9
 MAX_WALLS = 10  # maximum number of walls a user can use
 
 # ----------------------------
