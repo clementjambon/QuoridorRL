@@ -1,5 +1,6 @@
 import numpy as np
 from environment.quoridor_action import MoveAction, QuoridorAction, WallAction
+import copy
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
@@ -92,8 +93,7 @@ class QuoridorState:
         """
         return (player_idx + 1) % self.nb_players
 
-    def can_move_player(self, player_idx: int,
-                        target_position: tuple[int, int]) -> bool:
+    def can_move_player(self, player_idx: int, target_position) -> bool:
         """Checks that a given player can move in a provided position
 
         Args:
@@ -162,8 +162,7 @@ class QuoridorState:
 
         return False
 
-    def move_player(self, player_idx: int,
-                    target_position: tuple[int, int]) -> None:
+    def move_player(self, player_idx: int, target_position) -> None:
         """Moves a player in a provided position
 
         Args:
@@ -184,7 +183,18 @@ class QuoridorState:
         return (
             self.player_positions[player_idx][0] == self.x_targets[player_idx])
 
-    def can_add_wall(self, player_idx: int, wall_position: tuple[int, int],
+    def is_game_over(self) -> bool:
+        """Checks whether a player has won or not
+        
+        Returns:
+            bool: True is the game is over, False otherwise
+        """
+        over = False
+        for i in range(self.nb_players):
+            over = over or self.player_win(i)
+        return over
+
+    def can_add_wall(self, player_idx: int, wall_position,
                      direction: int) -> bool:
         """Checks that a given player can add a wall
 
@@ -235,8 +245,7 @@ class QuoridorState:
 
         return True
 
-    def add_wall(self, player_idx: int, wall_position: tuple[int, int],
-                 direction: int) -> None:
+    def add_wall(self, player_idx: int, wall_position, direction: int) -> None:
         """Adds a wall requested by a specific player
 
         Args:
@@ -248,7 +257,7 @@ class QuoridorState:
         self.walls[wall_position] = direction
 
     # Returns the set of possible actions that the requested player can take
-    def get_possible_actions(self, player_idx: int) -> list[QuoridorAction]:
+    def get_possible_actions(self, player_idx: int):
         """Returns a list with all the actions a player can take
 
         Args:
@@ -257,6 +266,7 @@ class QuoridorState:
         Returns:
             list[QuoridorAction]: list of actions (either MoveAction or WallAction)
         """
+        # print('get possible actions')
         possible_actions = []
 
         player_pos = self.player_positions[player_idx]
@@ -332,3 +342,26 @@ class QuoridorState:
 
         # Return the full list of actions
         return possible_actions
+
+    def act(self, action, player_idx):
+        """If permitted, execute action
+        
+        Args:
+            action (QuoridorAction): permitted action to execute
+            player_idx (int): player index
+            
+        Returns:
+            QuoridorState: resulting state
+        """
+        current_state = copy.deepcopy(self)
+        if action.type == 0:
+            if current_state.can_move_player(player_idx, action.player_pos):
+                # Move player
+                current_state.move_player(player_idx, action.player_pos)
+        else:
+            if current_state.can_add_wall(player_idx, action.wall_position,
+                                          action.wall_direction):
+                # Add wall
+                current_state.add_wall(player_idx, action.wall_position,
+                                       action.wall_direction)
+        return current_state

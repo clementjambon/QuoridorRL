@@ -24,7 +24,7 @@ class QuoridorEnv:
         self.current_player = 0
         self.done = False
 
-    def move_pawn(self, target_position: tuple[int, int]) -> bool:
+    def move_pawn(self, target_position) -> bool:
         """If permitted, move the current player to the provided position
 
         Args:
@@ -63,7 +63,7 @@ class QuoridorEnv:
 
         if self.state.can_add_wall(self.current_player, target_position,
                                    direction):
-            # Move player
+            # Add wall
             self.state.add_wall(self.current_player, target_position,
                                 direction)
             # Test winning move
@@ -79,3 +79,37 @@ class QuoridorEnv:
             )
 
             return False
+
+    def act(self, action):
+        """If permitted, execute action
+        
+        Args:
+            action (QuoridorAction): action to execute
+            
+        Returns:
+            QuoridorState: resulting state
+        """
+        if action.type == 0:
+            self.move_pawn(action.player_pos)
+        else:
+            self.add_wall(action.wall_position, action.wall_direction)
+        return self.state
+
+    def player_win(self, player_idx: int) -> bool:
+        """Checks whether the provided player has won or not
+
+        Args:
+            player_idx (int): index of the player
+
+        Returns:
+            bool: True if the player has won, False otherwise
+        """
+        return self.state.player_win(player_idx)
+
+    def is_game_over(self) -> bool:
+        """Checks whether a player has won or not
+        
+        Returns:
+            bool: True is the game is over, False otherwise
+        """
+        return self.state.is_game_over()

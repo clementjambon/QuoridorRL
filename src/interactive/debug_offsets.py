@@ -15,7 +15,7 @@ REQUIRED_WALLS_COLOR = (0, 0, 255)
 FORBIDDEN_WALLS_COLOR = (255, 0, 0)
 
 
-def draw_debug_offsets(screen, player_pos: tuple[int, int], offset_idx: int):
+def draw_debug_offsets(screen, player_pos, offset_idx: int):
     """Draws an offset scheme from the INDIRECT_OFFSETS used in QuoridorState
 
     Args:

@@ -3,7 +3,7 @@ class QuoridorAction:
     """
 
     def __init__(self) -> None:
-        pass
+        self.type = None
 
     def to_string(self) -> str:
         pass
@@ -26,6 +26,7 @@ class MoveAction(QuoridorAction):
         super().__init__()
         self.player_pos = player_pos
         self.player_idx = player_idx
+        self.type = 0
 
     def to_string(self) -> str:
         return XGRAD[self.player_pos[0]] + YGRAD[self.player_pos[1]]
@@ -39,6 +40,7 @@ class WallAction(QuoridorAction):
         super().__init__()
         self.wall_position = wall_position
         self.wall_direction = wall_direction
+        self.type = 1
 
     def to_string(self) -> str:
         return XGRAD[self.wall_position[0]] + YGRAD[
