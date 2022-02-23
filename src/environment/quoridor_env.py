@@ -65,9 +65,6 @@ class QuoridorEnv:
         # initialize the pathfinder used to check valid wall placement
         self.pathfinder = PathFinder(self.grid_size)
 
-        # initialize the game state
-        self.state = QuoridorState(grid_size=self.grid_size)
-
     def get_opponent(self, player_idx: int) -> int:
         """Returns the opponent of the provided player
 
@@ -79,7 +76,8 @@ class QuoridorEnv:
         """
         return (player_idx + 1) % self.nb_players
 
-    def step_from_index(self, action_idx: int):
+    def step_from_index(self, state: QuoridorState,
+                        action_idx: int) -> QuoridorState:
         # Map action from its index
         if action_idx < 0:
             print("Invalid action!")
@@ -90,11 +88,11 @@ class QuoridorEnv:
             target_pos = (action_idx // self.grid_size,
                           action_idx % self.grid_size)
             # TODO: remove this in production (should not be triggered)
-            if not self.can_move_pawn(self.state.current_player, target_pos):
+            if not self.can_move_pawn(state.current_player, target_pos):
                 print("Cannot move player at this position!")
                 return
 
-            self.move_pawn(self.state.current_player, target_pos)
+            next_state = self.move_pawn(state.current_player, target_pos)
         # Add wall
         else:
             wall_idx = action_idx - self.grid_size * self.grid_size
@@ -107,18 +105,18 @@ class QuoridorEnv:
                              wall_idx % (self.grid_size - 1))
 
             # TODO: remove this in production (should not be triggered)
-            if not self.can_add_wall(self.state.current_player, wall_position,
+            if not self.can_add_wall(state.current_player, wall_position,
                                      wall_direction):
                 print(
                     "Cannot add wall at this position and with this direction")
                 return
 
-            self.add_wall(self.state.current_player, wall_position,
-                          wall_direction)
+            next_state = self.add_wall(state.current_player, wall_position,
+                                       wall_direction)
 
-        return self
+        return next_state
 
-    def can_move_pawn(self, player_idx: int,
+    def can_move_pawn(self, state: QuoridorState,
                       target_position: tuple[int, int]) -> bool:
         """Checks that a given player can move in a provided position
 
@@ -133,11 +131,13 @@ class QuoridorEnv:
         if not is_in_bound(target_position, self.grid_size):
             return False
 
+        player_idx = state.current_player
+
         # Make sure the other player is not standing at the target_position
-        if target_position == self.state.player_positions[self.get_opponent(
+        if target_position == state.player_positions[self.get_opponent(
                 player_idx)]:
             return False
-        player_pos = self.state.player_positions[player_idx]
+        player_pos = state.player_positions[player_idx]
 
         # Check direct moves
         for pos_offset, wall_offsets, wall_direction in DIRECT_OFFSETS:
@@ -146,17 +146,17 @@ class QuoridorEnv:
                     wall_position = add_offset(player_pos, wall_offset)
                     if is_in_bound(
                             wall_position, self.grid_size - 1
-                    ) and self.state.walls[wall_position] == wall_direction:
+                    ) and state.walls[wall_position] == wall_direction:
                         return False
                 return True
 
         # Check moves with hopping
         for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in INDIRECT_OFFSETS:
             if target_position == add_offset(
-                    self.state.player_positions[player_idx],
-                    pos_offset) and self.state.player_positions[
-                        self.get_opponent(player_idx)] == add_offset(
-                            self.state.player_positions[player_idx],
+                    state.player_positions[player_idx],
+                    pos_offset) and state.player_positions[self.get_opponent(
+                        player_idx)] == add_offset(
+                            state.player_positions[player_idx],
                             opponent_offset):
 
                 found_required_wall = False
@@ -167,7 +167,7 @@ class QuoridorEnv:
 
                     if is_in_bound(wall_position, self.grid_size - 1):
                         one_in_bound = True
-                        if self.state.walls[
+                        if state.walls[
                                 wall_position] == required_wall_direction:
                             found_required_wall = True
                             break
@@ -180,8 +180,7 @@ class QuoridorEnv:
                     wall_position = add_offset(player_pos,
                                                forbidden_wall_offset)
                     if is_in_bound(
-                            wall_position,
-                            self.grid_size - 1) and self.state.walls[
+                            wall_position, self.grid_size - 1) and state.walls[
                                 wall_position] == forbidden_wall_direction:
                         return False
 
@@ -189,22 +188,23 @@ class QuoridorEnv:
 
         return False
 
-    def move_pawn(self, player_idx: int, target_position: tuple[int,
-                                                                int]) -> bool:
+    def move_pawn(self, state: QuoridorState,
+                  target_position: tuple[int, int]) -> QuoridorState:
         """Moves a player in a provided position
 
         Args:
             player_idx (int): index of the player
             target_position (_type_): targeted position
         """
-        self.state.player_positions[player_idx] = target_position
-        self.state.current_player = self.get_opponent(player_idx)
-        self.state.t += 1
-        self.state.done = self.player_win(
-            player_idx) or self.state.t >= self.max_t
-        return self.state.done
+        player_idx = state.current_player
+        state.player_positions[player_idx] = target_position
+        state.current_player = self.get_opponent(player_idx)
+        state.t += 1
+        state.done = self.player_win(state,
+                                     player_idx) or state.t >= self.max_t
+        return state
 
-    def player_win(self, player_idx: int) -> bool:
+    def player_win(self, state: QuoridorState, player_idx: int) -> bool:
         """Checks whether the provided player has won or not
 
         Args:
@@ -213,14 +213,14 @@ class QuoridorEnv:
         Returns:
             bool: True if the player has won, False otherwise
         """
-        player_won = (self.state.player_positions[player_idx][0] ==
+        player_won = (state.player_positions[player_idx][0] ==
                       self.x_targets[player_idx])
         # If the corresponding player won, set the winner to its index
-        self.state.winner = player_idx
+        state.winner = player_idx
         return player_won
 
-    def can_add_wall(self, player_idx: int, wall_position: tuple[int, int],
-                     direction: int) -> bool:
+    def can_add_wall(self, state: QuoridorState,
+                     wall_position: tuple[int, int], direction: int) -> bool:
         """Checks that a given player can add a wall
 
         Args:
@@ -234,45 +234,46 @@ class QuoridorEnv:
         # Make sure the target position is in bound
         if not is_in_bound(wall_position, self.grid_size - 1):
             return False
+
+        player_idx = state.current_player
         # Make sure the player has not used all of its walls yet
-        if self.state.nb_walls[player_idx] >= self.max_walls:
+        if state.nb_walls[player_idx] >= self.max_walls:
             return
         # Make sure the intersection is not already used by a wall
-        if self.state.walls[wall_position] != -1:
+        if state.walls[wall_position] != -1:
             return False
 
         # Check potential intersections
         if direction == 0:
             # One cannot place walls if there is already a wall of the same direction in the axis-aligned adjacent intersections
-            if wall_position[0] > 0 and self.state.walls[(
-                    wall_position[0] - 1, wall_position[1])] == 0:
+            if wall_position[0] > 0 and state.walls[(wall_position[0] - 1,
+                                                     wall_position[1])] == 0:
                 return False
-            if wall_position[0] < self.grid_size - 2 and self.state.walls[(
+            if wall_position[0] < self.grid_size - 2 and state.walls[(
                     wall_position[0] + 1, wall_position[1])] == 0:
                 return False
         if direction == 1:
             # One cannot place walls if there is already a wall of the same direction in the axis-aligned adjacent intersections
-            if wall_position[1] > 0 and self.state.walls[(
+            if wall_position[1] > 0 and state.walls[(
                     wall_position[0], wall_position[1] - 1)] == 1:
                 return False
-            if wall_position[1] < self.grid_size - 2 and self.state.walls[(
+            if wall_position[1] < self.grid_size - 2 and state.walls[(
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
         # Test pathfinding i.e make sure he cannot block the opponent from reaching its goal (in practice, he can block himself)
-        self.state.walls[wall_position] = direction
+        state.walls[wall_position] = direction
         for i in range(self.nb_players):
-            if not self.pathfinder.check_path(self.state.walls,
-                                              self.state.player_positions[i],
-                                              self.x_targets[i]):
+            if not self.pathfinder.check_path(
+                    state.walls, state.player_positions[i], self.x_targets[i]):
                 self.walls[wall_position] = -1
                 return False
-        self.state.walls[wall_position] = -1
+        state.walls[wall_position] = -1
 
         return True
 
-    def add_wall(self, player_idx: int, wall_position: tuple[int, int],
-                 direction: int) -> bool:
+    def add_wall(self, state: QuoridorState, wall_position: tuple[int, int],
+                 direction: int) -> QuoridorState:
         """Adds a wall requested by a specific player
 
         Args:
@@ -280,16 +281,18 @@ class QuoridorEnv:
             wall_position (_type_): position of the wall
             direction (int): direction of the wall
         """
-        self.state.nb_walls[player_idx] += 1
-        self.state.walls[wall_position] = direction
-        self.state.current_player = self.get_opponent(player_idx)
-        self.state.t += 1
-        self.state.done = self.player_win(
-            player_idx) or self.state.t >= self.max_t
-        return self.state.done
+        player_idx = state.current_player
+        state.nb_walls[player_idx] += 1
+        state.walls[wall_position] = direction
+        state.current_player = self.get_opponent(player_idx)
+        state.t += 1
+        state.done = self.player_win(state,
+                                     player_idx) or state.t >= self.max_t
+        return state
 
     # Returns the set of possible actions that the current player can take
-    def get_possible_actions(self) -> list[QuoridorAction]:
+    def get_possible_actions(self,
+                             state: QuoridorState) -> list[QuoridorAction]:
         """Returns a list with all the actions the current player can take
 
         Returns:
@@ -297,16 +300,15 @@ class QuoridorEnv:
         """
         possible_actions = []
 
-        player_pos = self.state.player_positions[self.state.current_player]
+        player_pos = state.player_positions[state.current_player]
 
         # If the player has not used all of its walls, check the walls he can place
         # Note: in practice, this is redundant but it prevents from looping
-        if self.state.nb_walls[self.state.current_player] < self.max_walls:
+        if state.nb_walls[state.current_player] < self.max_walls:
             for i in range(self.grid_size - 1):
                 for j in range(self.grid_size - 1):
                     for direction in range(2):
-                        if self.can_add_wall(self.state.current_player, (i, j),
-                                             direction):
+                        if self.can_add_wall(state, (i, j), direction):
                             possible_actions.append(
                                 WallAction((i, j), direction))
 
@@ -315,29 +317,29 @@ class QuoridorEnv:
         for pos_offset, wall_offsets, wall_direction in DIRECT_OFFSETS:
             target_position = add_offset(player_pos, pos_offset)
             if is_in_bound(target_position, self.grid_size
-                           ) and self.state.player_positions[self.get_opponent(
-                               self.state.current_player)] != target_position:
+                           ) and state.player_positions[self.get_opponent(
+                               state.current_player)] != target_position:
                 satisfy_walls = True
                 for wall_offset in wall_offsets:
                     wall_position = add_offset(player_pos, wall_offset)
                     if is_in_bound(
                             wall_position, self.grid_size - 1
-                    ) and self.state.walls[wall_position] == wall_direction:
+                    ) and state.walls[wall_position] == wall_direction:
                         satisfy_walls = False
                         break
                 if satisfy_walls:
                     possible_actions.append(
-                        MoveAction(target_position, self.state.current_player))
+                        MoveAction(target_position, state.current_player))
 
         # 1. moves with hopping
         for pos_offset, opponent_offset, required_wall_offsets, forbidden_wall_offsets in INDIRECT_OFFSETS:
             target_position = add_offset(player_pos, pos_offset)
             if is_in_bound(
-                    target_position, self.grid_size
-            ) and self.state.player_positions[self.get_opponent(
-                    self.state.current_player)] == add_offset(
-                        self.state.player_positions[self.state.current_player],
-                        opponent_offset):
+                    target_position,
+                    self.grid_size) and state.player_positions[
+                        self.get_opponent(state.current_player)] == add_offset(
+                            state.player_positions[state.current_player],
+                            opponent_offset):
 
                 found_required_wall = False
                 one_in_bound = False
@@ -347,7 +349,7 @@ class QuoridorEnv:
 
                     if is_in_bound(wall_position, self.grid_size - 1):
                         one_in_bound = True
-                        if self.state.walls[
+                        if state.walls[
                                 wall_position] == required_wall_direction:
                             found_required_wall = True
                             break
@@ -361,20 +363,14 @@ class QuoridorEnv:
                     wall_position = add_offset(player_pos,
                                                forbidden_wall_offset)
                     if is_in_bound(
-                            wall_position,
-                            self.grid_size - 1) and self.state.walls[
+                            wall_position, self.grid_size - 1) and state.walls[
                                 wall_position] == forbidden_wall_direction:
                         satisfy_walls = False
                         break
 
                 if satisfy_walls:
                     possible_actions.append(
-                        MoveAction(target_position, self.state.current_player))
+                        MoveAction(target_position, state.current_player))
 
         # Return the full list of actions
         return possible_actions
-
-    def to_string(self):
-        # TODO: check that we do not to take into account invariances here
-        return str(self.state.walls) + str(self.state.player_positions) + str(
-            self.state.nb_walls)

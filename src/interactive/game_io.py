@@ -9,49 +9,48 @@ if not pg.font:
 sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from environment import QuoridorEnv, QuoridorConfig, INDIRECT_OFFSETS
+from environment import QuoridorEnv, QuoridorState, QuoridorConfig, INDIRECT_OFFSETS
 from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR, MAX_WALLS
 from interactive import draw_gui, draw_board, draw_state
 
 
-def handle_click(environment: QuoridorEnv, action_mode: int) -> None:
+def handle_click(environment: QuoridorEnv, state: QuoridorState,
+                 action_mode: int) -> None:
     # Prevents players from taking actions if the game is over
-    if environment.state.done:
+    if state.done:
         return None
 
     mouse_pos = pg.mouse.get_pos()
     if action_mode == 0:
         target_position = (mouse_pos[0] // CELL_SIZE,
                            mouse_pos[1] // CELL_SIZE)
-        if environment.can_move_pawn(environment.state.current_player,
-                                     target_position):
-            environment.move_pawn(environment.state.current_player,
-                                  target_position)
+        if environment.can_move_pawn(state, target_position):
+            state = environment.move_pawn(state, target_position)
         else:
             print(
-                f"QuoridorEnv: cannot move player {environment.state.current_player} to target position {target_position}"
+                f"QuoridorEnv: cannot move player {state.current_player} to target position {target_position}"
             )
             return
     else:
         target_position = (int((mouse_pos[0] - CELL_SIZE / 2) // CELL_SIZE),
                            int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
         direction = 0 if action_mode == 1 else 1
-        if environment.can_add_wall(environment.state.current_player,
-                                    target_position, direction):
-            environment.add_wall(target_position, direction)
+        if environment.can_add_wall(state, target_position, direction):
+            print(type(state))
+            state = environment.add_wall(state, target_position, direction)
         else:
             print(
-                f"QuoridorEnv: cannot place wall for player {environment.state.current_player} to target position {target_position} and direction {direction}"
+                f"QuoridorEnv: cannot place wall for player {state.current_player} to target position {target_position} and direction {direction}"
             )
             return
 
     # DEBUG
     # print the set of actions that the new player can take
-    possible_actions = environment.get_possible_actions()
+    possible_actions = environment.get_possible_actions(state)
     possible_actions_str = [action.to_string() for action in possible_actions]
 
     print(
-        f"Debug: possible actions for player {environment.state.current_player} are {possible_actions_str}"
+        f"Debug: possible actions for player {state.current_player} are {possible_actions_str}"
     )
 
 
@@ -62,6 +61,9 @@ def main():
 
     # Initialize Quoridor Environment
     environment = QuoridorEnv(game_config)
+
+    # Initialize Quoridor State
+    state = QuoridorState(game_config)
 
     # Initialize action mode
     action_mode = 0
@@ -118,16 +120,16 @@ def main():
                 rendering = False
             # TODO: handle key down
             elif event.type == pg.MOUSEBUTTONDOWN:
-                handle_click(environment, action_mode)
+                handle_click(environment, state, action_mode)
             elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 action_mode = (action_mode + 1) % 3
         # draw
         screen.blit(background, (0, 0))
         draw_board(screen, cell)
-        draw_state(screen, environment, pawn_0, pawn_1, horizontal_wall,
+        draw_state(screen, state, pawn_0, pawn_1, horizontal_wall,
                    vertical_wall)
         #draw_debug_offsets(screen, (5, 5), 11)
-        draw_gui(screen, environment, action_mode, environment.state.done)
+        draw_gui(screen, state, action_mode, state.done)
         pg.display.flip()
 
     pg.quit()
