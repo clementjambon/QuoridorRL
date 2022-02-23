@@ -8,6 +8,9 @@ class QuoridorAction:
     def to_string(self) -> str:
         pass
 
+    def to_index(self, grid_size: int) -> int:
+        pass
+
 
 # to_string implementations follow the notations described in
 # https://en.wikipedia.org/wiki/Quoridor#Notation
@@ -30,6 +33,9 @@ class MoveAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.player_pos[0]] + YGRAD[self.player_pos[1]]
 
+    def to_index(self, grid_size: int) -> int:
+        return grid_size * self.player_pos[0] + self.player_pos[1]
+
 
 class WallAction(QuoridorAction):
     """Action for wall placement
@@ -43,3 +49,8 @@ class WallAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.wall_position[0]] + YGRAD[
             self.wall_position[1]] + DIRGRAD[self.wall_direction]
+
+    def to_index(self, grid_size: int) -> int:
+        return grid_size * grid_size + (grid_size - 1) * (
+            grid_size - 1) * self.wall_direction + (
+                grid_size - 1) * self.wall_position[0] + self.wall_position[1]

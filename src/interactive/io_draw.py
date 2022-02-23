@@ -8,7 +8,7 @@ def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
     if pg.font:
         font = pg.font.Font(None, 64)
         player_text = font.render(
-            f"Player {environment.current_player} is playing", True,
+            f"Player {environment.state.current_player} is playing", True,
             TEXT_COLOR)
         player_text_pos = (0, GRID_SIZE * CELL_SIZE)
         screen.blit(player_text, player_text_pos)
@@ -20,8 +20,9 @@ def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
 
         if done:
             done_text = font.render(
-                f"Game is over: player {environment.state.get_opponent(environment.current_player)} won!",
-                True, TEXT_COLOR)
+                f"Game is over: player {environment.state.winner} won!"
+                if environment.state.winner >= 0 else
+                "Game is over: ended with a draw!", True, TEXT_COLOR)
             done_text_pos = (0, GRID_SIZE * CELL_SIZE + 64 * 2)
             screen.blit(done_text, done_text_pos)
 
