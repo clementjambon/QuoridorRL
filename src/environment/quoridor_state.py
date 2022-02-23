@@ -31,6 +31,8 @@ class QuoridorState:
         self.current_player = 0
 
     def to_string(self):
+        # This is need to be invariant, we therefore change it to the perspective of the current player
         # TODO: check that we do not to take into account invariances here
-        return str(self.walls) + str(self.player_positions) + str(
-            self.nb_walls)
+        return str(np.rot90(self.walls, 2 * self.current_player)) + str(
+            np.roll(self.player_positions, self.current_player)) + str(
+                np.roll(self.nb_walls, self.current_player))

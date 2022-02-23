@@ -1,6 +1,10 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
+
+from alphazero import QuoridorRepresentation
+from environment import QuoridorConfig
 
 
 class ResidualBlock(nn.Module):
@@ -12,13 +16,13 @@ class ResidualBlock(nn.Module):
                                kernel_size=kernel_size,
                                stride=stride,
                                padding="same")
-        self.bn1 = nn.BatchNorm2d
+        self.bn1 = nn.BatchNorm2d(nb_filters)
         self.conv2 = nn.Conv2d(nb_filters,
                                nb_filters,
                                kernel_size=kernel_size,
                                stride=stride,
                                padding="same")
-        self.bn2 = nn.BatchNorm2d
+        self.bn2 = nn.BatchNorm2d(nb_filters)
 
     def forward(self, x: Tensor):
         old_x = x
@@ -37,19 +41,22 @@ class ResidualBlock(nn.Module):
 class QuoridorModel(nn.Module):
 
     def __init__(self,
-                 grid_size=9,
-                 feature_planes=2,
+                 device,
+                 game_config: QuoridorConfig,
+                 representation: QuoridorRepresentation,
                  time_consistency=8,
-                 constant_planes=1,
                  nb_residual_blocks=9,
                  nb_filters=256,
                  kernel_size=3,
                  stride=1) -> None:
         super().__init__()
-        self.grid_size = grid_size
+
+        self.device = device
+
+        self.grid_size = game_config.grid_size
         self.nb_residual_blocks = nb_residual_blocks
 
-        self.nb_channels = time_consistency * feature_planes + constant_planes
+        self.nb_channels = time_consistency * representation.nb_features + representation.nb_constants
 
         # NOTE: padding is applied to keep the same dimensions everywhere
 
@@ -57,8 +64,9 @@ class QuoridorModel(nn.Module):
         self.conv1 = nn.Conv2d(in_channels=self.nb_channels,
                                out_channels=nb_filters,
                                kernel_size=kernel_size,
-                               stride=stride)
-        self.bn1 = nn.BatchNorm2d
+                               stride=stride,
+                               padding="same")
+        self.bn1 = nn.BatchNorm2d(nb_filters)
 
         # Residual tower
         self.residual_blocks = [
@@ -67,15 +75,14 @@ class QuoridorModel(nn.Module):
         ]
 
         # Policy head (the output is now (grid_size-1)x(grid_size-1)x2 for walls and grid_sizexgrid_size for pawn moves)
-        self.policy_dist_size = self.grid_size * self.grid_size(
-            self.grid_size - 1) * (self.grid_size - 1) * 2
+        self.policy_dist_size = game_config.nb_actions
         # TODO: use something else than a flat distribution
         self.policy_conv = nn.Conv2d(nb_filters,
                                      2,
                                      kernel_size=1,
                                      stride=1,
                                      padding="same")
-        self.policy_bn = nn.BatchNorm2d
+        self.policy_bn = nn.BatchNorm2d(2)
         self.policy_output = nn.Linear(2 * self.grid_size * self.grid_size,
                                        self.policy_dist_size)
 
@@ -85,11 +92,13 @@ class QuoridorModel(nn.Module):
                                     kernel_size=1,
                                     stride=1,
                                     padding="same")
-        self.value_bn = nn.BatchNorm2d
+        self.value_bn = nn.BatchNorm2d(1)
         self.value_fc1 = nn.Linear(self.grid_size * self.grid_size, 256)
         self.value_fc2 = nn.Linear(256, 1)
 
-    def forward(self, x):
+    def forward(self, x: Tensor):
+
+        x.to(self.device)
         x = self.conv1(x)
         x = self.bn1(x)
         x = F.relu(x)
@@ -104,7 +113,7 @@ class QuoridorModel(nn.Module):
         # Flatten the output
         p = p.view(-1, 2 * self.grid_size * self.grid_size)
         p = self.policy_output(p)
-        p = F.softmax(p)
+        p = F.softmax(p, dim=1)
 
         # Value head
         v = self.value_conv(x)
@@ -116,6 +125,6 @@ class QuoridorModel(nn.Module):
         v = F.relu(v)
         v = self.value_fc2(v)
         # Make sure values stay in [-1, 1]
-        v = F.tanh(v)
+        v = torch.tanh(v)
 
         return p, v

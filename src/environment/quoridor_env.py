@@ -88,11 +88,11 @@ class QuoridorEnv:
             target_pos = (action_idx // self.grid_size,
                           action_idx % self.grid_size)
             # TODO: remove this in production (should not be triggered)
-            if not self.can_move_pawn(state.current_player, target_pos):
+            if not self.can_move_pawn(state, target_pos):
                 print("Cannot move player at this position!")
                 return
 
-            next_state = self.move_pawn(state.current_player, target_pos)
+            next_state = self.move_pawn(state, target_pos)
         # Add wall
         else:
             wall_idx = action_idx - self.grid_size * self.grid_size
@@ -105,14 +105,12 @@ class QuoridorEnv:
                              wall_idx % (self.grid_size - 1))
 
             # TODO: remove this in production (should not be triggered)
-            if not self.can_add_wall(state.current_player, wall_position,
-                                     wall_direction):
+            if not self.can_add_wall(state, wall_position, wall_direction):
                 print(
                     "Cannot add wall at this position and with this direction")
                 return
 
-            next_state = self.add_wall(state.current_player, wall_position,
-                                       wall_direction)
+            next_state = self.add_wall(state, wall_position, wall_direction)
 
         return next_state
 
