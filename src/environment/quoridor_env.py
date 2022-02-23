@@ -264,7 +264,7 @@ class QuoridorEnv:
         for i in range(self.nb_players):
             if not self.pathfinder.check_path(
                     state.walls, state.player_positions[i], self.x_targets[i]):
-                self.walls[wall_position] = -1
+                state.walls[wall_position] = -1
                 return False
         state.walls[wall_position] = -1
 
