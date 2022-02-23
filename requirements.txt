@@ -3,3 +3,4 @@ matplotlib
 pygame
 yapf
 pylint
+torch
