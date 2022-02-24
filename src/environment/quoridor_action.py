@@ -12,7 +12,7 @@ class QuoridorAction:
 # to_string implementations follow the notations described in
 # https://en.wikipedia.org/wiki/Quoridor#Notation
 
-# TODO: extand this in case of bigger grid_size
+# TODO: extend this in case of bigger grid_size
 XGRAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 YGRAD = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
 DIRGRAD = ["h", "v"]
@@ -30,6 +30,9 @@ class MoveAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.player_pos[0]] + YGRAD[self.player_pos[1]]
 
+    def get_pos(self):
+        return self.player_pos
+
 
 class WallAction(QuoridorAction):
     """Action for wall placement
@@ -43,3 +46,9 @@ class WallAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.wall_position[0]] + YGRAD[
             self.wall_position[1]] + DIRGRAD[self.wall_direction]
+
+    def get_pos(self):
+        return self.wall_position
+
+    def get_dir(self):
+        return self.wall_direction

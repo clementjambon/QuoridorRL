@@ -9,47 +9,26 @@ if not pg.font:
 sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from environment import QuoridorEnv, INDIRECT_OFFSETS
-from environment.board_graph import BoardGraph
+from environment import INDIRECT_OFFSETS
+from environment.quoridor_env import QuoridorEnv, QuoridorEnvAgents
 from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR, MAX_WALLS
 from interactive import draw_gui, draw_board, draw_state
 
 
-def handle_click(environment: QuoridorEnv, action_mode: int) -> None:
+#agent chooses next move at each mouse click
+def agent_plays_onclick(environment: QuoridorEnvAgents) -> None:
     # Prevents players from taking actions if the game is over
     if environment.done:
         return None
 
-    mouse_pos = pg.mouse.get_pos()
-    action_successful = False
-    if action_mode == 0:
-        target_position = (mouse_pos[0] // CELL_SIZE,
-                           mouse_pos[1] // CELL_SIZE)
-        action_successful = environment.move_pawn(target_position)
-    else:
-        target_position = (int((mouse_pos[0] - CELL_SIZE / 2) // CELL_SIZE),
-                           int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
-        direction = 0 if action_mode == 1 else 1
-        action_successful = environment.add_wall(target_position, direction)
-
-    # DEBUG
-    # print the set of actions that the new player can take
-    if action_successful:
-        possible_actions = environment.state.get_possible_actions(
-            environment.current_player)
-        possible_actions_str = [
-            action.to_string() for action in possible_actions
-        ]
-
-        #print(
-        #    f"Debug: possible actions for player {environment.current_player} are {possible_actions_str}"
-        #)
+    #choose a random action
+    environment.play()
 
 
 def main():
 
     # Initialize Quoridor Environment
-    environment = QuoridorEnv(grid_size=GRID_SIZE, max_walls=MAX_WALLS)
+    environment = QuoridorEnvAgents(grid_size=GRID_SIZE, max_walls=MAX_WALLS)
 
     # Initialize action mode
     action_mode = 0
@@ -106,9 +85,8 @@ def main():
                 rendering = False
             # TODO: handle key down
             elif event.type == pg.MOUSEBUTTONDOWN:
-                handle_click(environment, action_mode)
-            elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                action_mode = (action_mode + 1) % 3
+                agent_plays_onclick(environment)
+
         # draw
         screen.blit(background, (0, 0))
         draw_board(screen, cell)

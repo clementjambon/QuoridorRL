@@ -18,11 +18,15 @@ def draw_gui(screen: pg.Surface, environment: QuoridorEnv, action_mode: int,
         action_text_pos = (0, GRID_SIZE * CELL_SIZE + 64)
         screen.blit(action_text, action_text_pos)
 
-        command_font =  pg.font.Font(None, 35)
+        command_font = pg.font.Font(None, 35)
         command_text = command_font.render(
-            f"Command: click on space bar to change action mode", True, (128, 128, 128))
-        command_text_pos = (0, GRID_SIZE * CELL_SIZE + 120 )
+            "Command: click on space bar to change action mode", True,
+            (128, 128, 128))
+        command_text_pos = (0, GRID_SIZE * CELL_SIZE + 120)
         screen.blit(command_text, command_text_pos)
+
+        #TODO : add number of walls left for each player
+        #TODO : add warning when no more walls and remove possible actions (right now wrong msg "cannot move player")
 
         if done:
             done_text = font.render(

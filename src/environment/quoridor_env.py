@@ -1,6 +1,7 @@
 import numpy as np
+from environment.quoridor_action import MoveAction, WallAction, QuoridorAction
 
-from environment.quoridor_state import QuoridorState
+from environment.quoridor_state import QuoridorState, QuoridorStateRandomAgents
 
 # ----------------------------
 # ENVIRONMENT VARIABLES
@@ -79,3 +80,25 @@ class QuoridorEnv:
             )
 
             return False
+
+
+class QuoridorEnvAgents(QuoridorEnv):
+
+    def __init__(self, grid_size=9, max_walls=10) -> None:
+        super().__init__(grid_size, max_walls)
+        self.state = QuoridorStateRandomAgents(self.grid_size, self.max_walls)
+
+    def play(self):
+        if self.current_player == 0:
+            action = self.state.agent0.choose_action(
+                self.state.get_possible_actions(self.current_player))
+        else:
+            action = self.state.agent1.choose_action(
+                self.state.get_possible_actions(self.current_player))
+        if isinstance(action, MoveAction):
+            self.state.move_player(self.current_player, action.get_pos())
+        else:
+            self.state.add_wall(self.current_player, action.get_pos(),
+                                action.get_dir())
+        # Update current player
+        self.current_player = (self.current_player + 1) % NB_PLAYERS

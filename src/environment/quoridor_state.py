@@ -1,5 +1,6 @@
 import numpy as np
 from environment.quoridor_action import MoveAction, QuoridorAction, WallAction
+from agents.agents import RandomAgent
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
@@ -332,3 +333,31 @@ class QuoridorState:
 
         # Return the full list of actions
         return possible_actions
+
+
+class QuoridorStateRandomAgents(QuoridorState):
+
+    def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
+        super().__init__(grid_size, max_walls)
+        self.agent0 = RandomAgent(0, self.player_positions[0],
+                                  self.nb_walls[0], self.x_targets[0])
+        self.agent1 = RandomAgent(1, self.player_positions[1],
+                                  self.nb_walls[1], self.x_targets[1])
+
+    #not efficient coding -> should be in Agent class but easier to reuse super()
+    def move_player(self, player_idx: int,
+                    target_position: tuple[int, int]) -> None:
+        super().move_player(player_idx, target_position)
+        if (player_idx == 0):
+            self.agent0.set_position(target_position)
+        else:
+            self.agent1.set_position(target_position)
+
+    def add_wall(self, player_idx: int, wall_position: tuple[int, int],
+                 direction: int) -> None:
+        super().add_wall(player_idx, wall_position, direction)
+        if (player_idx == 0):
+            self.agent0.nb_walls_placed += 1
+        else:
+            self.agent1.nb_walls_placed += 1
+        #TODO : update graph if this structure used
