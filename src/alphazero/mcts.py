@@ -165,7 +165,7 @@ class MCTS:
     def play_policy(self,
                     environment: QuoridorEnv,
                     state: QuoridorState,
-                    nb_simulations: int = 1600,
+                    nb_simulations: int = 800,
                     temperature: float = 1):
 
         # Perform nb_simulations
