@@ -1,3 +1,4 @@
+from matplotlib.pyplot import grid
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -38,6 +39,65 @@ class ResidualBlock(nn.Module):
         return x
 
 
+class FlatPolicyHead(nn.Module):
+
+    def __init__(self, nb_filters: int, grid_size: int,
+                 nb_actions: int) -> None:
+        super().__init__()
+        self.grid_size = grid_size
+
+        # TODO: use something else than a flat distribution
+        self.policy_conv = nn.Conv2d(nb_filters,
+                                     2,
+                                     kernel_size=1,
+                                     stride=1,
+                                     padding="same")
+        self.policy_bn = nn.BatchNorm2d(2)
+        self.policy_output = nn.Linear(2 * self.grid_size * self.grid_size,
+                                       nb_actions)
+
+    def forward(self, x: Tensor) -> Tensor:
+        # Policy head
+        p = self.policy_conv(x)
+        p = self.policy_bn(p)
+        p = F.relu(p)
+        # Flatten the output
+        p = p.view(-1, 2 * self.grid_size * self.grid_size)
+        p = self.policy_output(p)
+        p = F.softmax(p, dim=1)
+
+        return p
+
+
+class ValueHead(nn.Module):
+
+    def __init__(self, nb_filters: int, grid_size: int) -> None:
+        super().__init__()
+        self.grid_size = grid_size
+
+        self.value_conv = nn.Conv2d(nb_filters,
+                                    1,
+                                    kernel_size=1,
+                                    stride=1,
+                                    padding="same")
+        self.value_bn = nn.BatchNorm2d(1)
+        self.value_fc1 = nn.Linear(grid_size * grid_size, 256)
+        self.value_fc2 = nn.Linear(256, 1)
+
+    def forward(self, x: Tensor) -> Tensor:
+        v = self.value_conv(x)
+        v = self.value_bn(v)
+        v = F.relu(v)
+        # Flatten the ouptput
+        v = v.view(-1, self.grid_size * self.grid_size)
+        v = self.value_fc1(v)
+        v = F.relu(v)
+        v = self.value_fc2(v)
+        # Make sure values stay in [-1, 1]
+        v = torch.tanh(v)
+        return v
+
+
 class QuoridorModel(nn.Module):
 
     def __init__(self,
@@ -75,26 +135,11 @@ class QuoridorModel(nn.Module):
         ]
 
         # Policy head (the output is now (grid_size-1)x(grid_size-1)x2 for walls and grid_sizexgrid_size for pawn moves)
-        self.policy_dist_size = game_config.nb_actions
-        # TODO: use something else than a flat distribution
-        self.policy_conv = nn.Conv2d(nb_filters,
-                                     2,
-                                     kernel_size=1,
-                                     stride=1,
-                                     padding="same")
-        self.policy_bn = nn.BatchNorm2d(2)
-        self.policy_output = nn.Linear(2 * self.grid_size * self.grid_size,
-                                       self.policy_dist_size)
+        self.policy_head = FlatPolicyHead(nb_filters, self.grid_size,
+                                          game_config.nb_actions)
 
         # Value head
-        self.value_conv = nn.Conv2d(nb_filters,
-                                    1,
-                                    kernel_size=1,
-                                    stride=1,
-                                    padding="same")
-        self.value_bn = nn.BatchNorm2d(1)
-        self.value_fc1 = nn.Linear(self.grid_size * self.grid_size, 256)
-        self.value_fc2 = nn.Linear(256, 1)
+        self.value_head = ValueHead(nb_filters, self.grid_size)
 
     def forward(self, x: Tensor):
 
@@ -107,24 +152,9 @@ class QuoridorModel(nn.Module):
             x = residual_block(x)
 
         # Policy head
-        p = self.policy_conv(x)
-        p = self.policy_bn(p)
-        p = F.relu(p)
-        # Flatten the output
-        p = p.view(-1, 2 * self.grid_size * self.grid_size)
-        p = self.policy_output(p)
-        p = F.softmax(p, dim=1)
+        p = self.policy_head(x)
 
         # Value head
-        v = self.value_conv(x)
-        v = self.value_bn(v)
-        v = F.relu(v)
-        # Flatten the ouptput
-        v = v.view(-1, self.grid_size * self.grid_size)
-        v = self.value_fc1(v)
-        v = F.relu(v)
-        v = self.value_fc2(v)
-        # Make sure values stay in [-1, 1]
-        v = torch.tanh(v)
+        v = self.value_head(x)
 
         return p, v
