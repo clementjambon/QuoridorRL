@@ -36,7 +36,7 @@ class SelfPlayer:
         for i in range(self.nb_games):
             print(f"Playing game {i}")
             self.play_game(i)
-        self.save_buffer()
+        return self.save_buffer()
 
     def play_game(self, game_idx):
         # Initialize a game
@@ -91,7 +91,9 @@ class SelfPlayer:
     def save_buffer(self):
         buffer_str = self.model.to_string(
         ) + f"-g{self.nb_games}-s{self.nb_simulations}.pkl"
-        with open(os.path.join(self.save_dir, buffer_str)) as handle:
+        full_path = os.path.join(self.save_dir, buffer_str)
+        with open(full_path) as handle:
             pickle.dump(self.state_buffer,
                         handle,
                         protocol=pickle.HIGHEST_PROTOCOL)
+        return full_path

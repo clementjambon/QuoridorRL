@@ -6,6 +6,7 @@ import numpy as np
 
 from alphazero import QuoridorRepresentation, QuoridorModel
 from environment import QuoridorState, QuoridorEnv, QuoridorConfig
+from utils import change_action_perspective
 
 
 class ActionRecord:
@@ -67,8 +68,10 @@ class MCTS:
                                   temperature=temperature)
 
         # Return the action according to the provided policy distribution
-        return int(np.random.choice(np.arange(self.nb_actions),
-                                    p=policy)), policy
+        return change_action_perspective(
+            state.current_player,
+            int(np.random.choice(np.arange(self.nb_actions), p=policy)),
+            grid_size=environment.grid_size), policy
 
     def puct_action(self,
                     environment: QuoridorEnv,
@@ -81,7 +84,9 @@ class MCTS:
         if state_record.pi_s is not None:
             sum_p = 0
             for action in environment.get_possible_actions(state):
-                action_idx = action.to_index(environment.grid_size)
+                action_idx = action.to_perspective(
+                    state.current_player,
+                    environment.grid_size).to_index(environment.grid_size)
                 # Action probabilities have already been stored in the StateRecord normally
                 action_p = state_record.pi_s[action_idx]
                 # Thus, update the ActionRecords accordingly
@@ -146,7 +151,10 @@ class MCTS:
         # state = deepcopy(state)
 
         # Get next_state after taking action
-        next_state = environment.step_from_index(state, action_idx)
+        next_state = environment.step_from_index(
+            state,
+            change_action_perspective(state.current_player, action_idx,
+                                      environment.grid_size))
         # Search the next state
         v = self.search(environment, next_state, feature_planes)
         # NOTE: make sure to reverse the propagated value!
@@ -174,10 +182,10 @@ class MCTS:
             # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
             init_state = deepcopy(state)
             self.search(environment, init_state, [])
-            # if (i + 1) % (nb_simulations // 10) == 0:
-            #     print(
-            #         f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
-            #     )
+            if (i + 1) % (nb_simulations // 10) == 0:
+                print(
+                    f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
+                )
 
         state_str = state.to_string()
         state_record = self.tree[state_str]

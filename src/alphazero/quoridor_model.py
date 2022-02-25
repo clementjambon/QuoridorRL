@@ -1,4 +1,3 @@
-from matplotlib.pyplot import grid
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -57,6 +56,7 @@ class FlatPolicyHead(nn.Module):
         self.policy_bn = nn.BatchNorm2d(2)
         self.policy_output = nn.Linear(2 * self.grid_size * self.grid_size,
                                        nb_actions)
+        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x: Tensor) -> Tensor:
         # Policy head
@@ -66,9 +66,15 @@ class FlatPolicyHead(nn.Module):
         # Flatten the output
         p = p.view(-1, 2 * self.grid_size * self.grid_size)
         p = self.policy_output(p)
-        p = F.softmax(p, dim=1)
+        p = self.softmax(p)
 
         return p
+
+
+class SquarePolicyHead(nn.Module):
+
+    def __init__(self) -> None:
+        super().__init__()
 
 
 class ValueHead(nn.Module):
