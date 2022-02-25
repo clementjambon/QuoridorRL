@@ -8,9 +8,11 @@ sys.path.insert(0,
 import torch
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
-from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
+from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer
 
 if __name__ == "__main__":
+
+    sys.settrace(None)
 
     # Set device used by torch
     device = torch.device(
@@ -26,6 +28,15 @@ if __name__ == "__main__":
     init_model = QuoridorModel(device, game_config, representation)
     init_model.to(device)
 
-    mcts = MCTS(game_config, init_model, representation)
+    dir_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '../../data/self_play/'))
 
-    mcts.select_action(environment, state, nb_simulations=100, temperature=1.0)
+    self_player = SelfPlayer(init_model,
+                             game_config,
+                             environment,
+                             representation,
+                             dir_path,
+                             nb_games=1,
+                             nb_simulations=100)
+
+    self_player.play_games()

@@ -35,13 +35,15 @@ class QuoridorState:
         # initialize the current player
         self.current_player = 0
 
-    def to_string(self, invariance=True, add_nb_walls=False):
+    def to_string(self, invariance=False, add_nb_walls=False):
         # invariance specifies whether we make it invariant to the current player or not
         # add_nb_walls specifies whether we add the number of remaining walls for each player at the end of the string
         state_str = ""
-        if invariance:
-            invariant_pos = np.roll(self.player_positions, self.current_player)
-            invariant_nb_walls = np.roll(self.nb_walls, self.current_player)
+        if invariance and self.current_player == 1:
+            invariant_pos = [
+                self.player_positions[1], self.player_positions[0]
+            ]
+            invariant_nb_walls = [self.nb_walls[1], self.nb_walls[0]]
             invariant_walls = np.rot90(self.walls, 2 * self.current_player)
         else:
             invariant_pos = self.player_positions
@@ -60,8 +62,6 @@ class QuoridorState:
             state_str += "p0:" + str(
                 invariant_nb_walls[0]) + ";" + "p1:" + str(
                     invariant_nb_walls[1]) + ";"
-
-        print(state_str)
 
         return state_str
         # return str(np.rot90(self.walls, 2 * self.current_player)) + str(

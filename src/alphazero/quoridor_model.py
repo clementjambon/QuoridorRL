@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
+from datetime import datetime
+import uuid
 
 from alphazero import QuoridorRepresentation
 from environment import QuoridorConfig
@@ -115,6 +117,7 @@ class QuoridorModel(nn.Module):
 
         self.grid_size = game_config.grid_size
         self.nb_residual_blocks = nb_residual_blocks
+        self.nb_filters = nb_filters
 
         self.nb_channels = time_consistency * representation.nb_features + representation.nb_constants
 
@@ -141,6 +144,10 @@ class QuoridorModel(nn.Module):
         # Value head
         self.value_head = ValueHead(nb_filters, self.grid_size)
 
+        # Meta data
+        self.id = uuid.uuid1()
+        self.creation_time = datetime.now()
+
     def forward(self, x: Tensor):
 
         x.to(self.device)
@@ -158,3 +165,12 @@ class QuoridorModel(nn.Module):
         v = self.value_head(x)
 
         return p, v
+
+    def to_string(self, uuid_based=True):
+        model_str = ""
+        if uuid_based:
+            model_str += self.id
+        else:
+            model_str += self.creation_time
+        model_str += f"-r{self.nb_residual_blocks}-f{self.nb_filters}"
+        return model_str

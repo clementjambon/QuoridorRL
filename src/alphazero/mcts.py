@@ -53,8 +53,8 @@ class MCTS:
     def select_action(self,
                       environment: QuoridorEnv,
                       state: QuoridorState,
-                      nb_simulations: int = 1600,
-                      temperature: float = 1) -> int:
+                      nb_simulations: int = 800,
+                      temperature: float = 1) -> tuple[int, np.ndarray]:
         # Selects an action provided the current state
 
         # Don't forget to reset the tree
@@ -67,7 +67,8 @@ class MCTS:
                                   temperature=temperature)
 
         # Return the action according to the provided policy distribution
-        return int(np.random.choice(np.arange(self.nb_actions), p=policy))
+        return int(np.random.choice(np.arange(self.nb_actions),
+                                    p=policy)), policy
 
     def puct_action(self,
                     environment: QuoridorEnv,
@@ -77,7 +78,6 @@ class MCTS:
         state_record = self.tree[state_str]
 
         # Update action probabilities by renormalizing over valid actions
-        # print(state_record.pi_s)
         if state_record.pi_s is not None:
             sum_p = 0
             for action in environment.get_possible_actions(state):
@@ -120,6 +120,7 @@ class MCTS:
         # TODO: filter valid actions!
 
         state_str = state.to_string()
+        #print(f"Searching {state_str} with depth {len(feature_planes)}")
         current_feature_plane = self.state_representation.generate_instant_planes(
             state)
         feature_planes.append(current_feature_plane)
@@ -141,8 +142,8 @@ class MCTS:
         action_idx = self.puct_action(environment, state, state_str)
         current_action_record = current_state_record.actions[action_idx]
 
-        # NOTE: deepcopy the state before performing a state, otherwise, it will be modifier!
-        state = deepcopy(state)
+        # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
+        # state = deepcopy(state)
 
         # Get next_state after taking action
         next_state = environment.step_from_index(state, action_idx)
@@ -170,17 +171,25 @@ class MCTS:
 
         # Perform nb_simulations
         for i in range(nb_simulations):
-            self.search(environment, state, [])
-            if (i + 1) % (nb_simulations // 10) == 0:
-                print(
-                    f'Performed {i+1} simulation out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
-                )
+            # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
+            init_state = deepcopy(state)
+            self.search(environment, init_state, [])
+            # if (i + 1) % (nb_simulations // 10) == 0:
+            #     print(
+            #         f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
+            #     )
 
         state_str = state.to_string()
         state_record = self.tree[state_str]
+
+        # Collect policy from state_record
+        policy = np.zeros(self.nb_actions)
+        for i, action in state_record.actions.items():
+            policy[i] = action.P_sa
+
         # If the temperature is zero, it is equivalent to returning the best action (i.e. deterministic policy)
         if temperature == 0:
-            best_action = np.argmax(state_record.pi_s)
+            best_action = np.argmax(policy)
             policy = np.zeros(self.nb_actions)
             policy[best_action] = 1.0
             return policy
