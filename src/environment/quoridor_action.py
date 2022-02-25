@@ -8,6 +8,9 @@ class QuoridorAction:
     def to_string(self) -> str:
         pass
 
+    def __eq__(self, other) -> bool:
+        pass
+
 
 # to_string implementations follow the notations described in
 # https://en.wikipedia.org/wiki/Quoridor#Notation
@@ -31,6 +34,11 @@ class MoveAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.player_pos[0]] + YGRAD[self.player_pos[1]]
 
+    def __eq__(self, other) -> bool:
+        return self.type == other.type and self.player_idx == other.player_idx and self.player_pos[
+            0] == other.player_pos[0] and self.player_pos[
+                1] == other.player_pos[1]
+
 
 class WallAction(QuoridorAction):
     """Action for wall placement
@@ -45,3 +53,8 @@ class WallAction(QuoridorAction):
     def to_string(self) -> str:
         return XGRAD[self.wall_position[0]] + YGRAD[
             self.wall_position[1]] + DIRGRAD[self.wall_direction]
+
+    def __eq__(self, other) -> bool:
+        return self.type == other.type and self.wall_direction == other.wall_direction and self.wall_position[
+            0] == other.wall_position[0] and self.wall_position[
+                1] == other.wall_position[1]

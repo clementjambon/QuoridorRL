@@ -30,7 +30,7 @@ def main():
         print('acting')
         root = MCTSNode(environment.state, environment.current_player)
         action = root.best_action()
-        print('acting...')
+        print('acting... type ' + str(action.type))
         environment.act(action)
         print("Position of PLAYER 0: " +
               str(environment.state.player_positions[0]))

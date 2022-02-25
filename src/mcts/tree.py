@@ -22,6 +22,8 @@ class MCTSNode():
         self._results = defaultdict(int)
         self._results[1] = 0
         self._results[-1] = 0
+        self._outcome_parent_action = 0
+        self._nb_parent_action = 0
         # print('initialized')
         self._untried_actions = self.untried_actions()
         self.depth = depth
@@ -36,7 +38,10 @@ class MCTSNode():
     def q(self):
         winning = self._results[1]
         loosing = self._results[-1]
-        return winning - loosing
+        q_mc = (winning - loosing) / self.n()
+        q_amaf = self._outcome_parent_action / self._nb_parent_action
+        beta = np.sqrt(1000.0 / (3 * self.n() + 1000.0))
+        return (1 - beta) * q_mc + beta * q_amaf
 
     def n(self):
         return self._nb_visited
@@ -59,6 +64,7 @@ class MCTSNode():
     def rollout(self):
         current_rollout_state = self.state
         player = self.player_idx
+        actions = []
         while not current_rollout_state.is_game_over():
             # print("initial position" +
             #       str(current_rollout_state.player_positions[player]))
@@ -71,16 +77,32 @@ class MCTSNode():
             # print(current_rollout_state.x_targets[player] -
             #       current_rollout_state.player_positions[player][0])
             player = self.state.get_opponent(player)
+            actions.append(action)
         # print("GAME OVER!")
         if current_rollout_state.player_win(self.player_idx):
-            return 1
-        return -1
+            return 1, actions
+        return -1, actions
 
-    def backpropagate(self, result):
+    def backpropagate(self, result, actions):
         self._nb_visited += 1
         self._results[result] += 1
+        actions.append(self.parent_action)
+        # for action in actions:  # TODO: traiter les doublons ?
+        #     if action in self._subtree_actions:
+        #         self._subtree_actions[action] += result
+        #         self._nb_actions[action] += 1
+        #     else:
+        #         self._subtree_actions[action] = result
+        #         self._nb_actions[action] = 1
         if self.parent:
-            self.parent.backpropagate(-1 * result)
+            nb = 0
+            for action in actions:
+                if action == self.parent_action:
+                    nb += 1
+            if nb > 0:
+                self._outcome_parent_action += result
+                self._nb_parent_action += nb
+            self.parent.backpropagate(-1 * result, actions)
 
     def is_fully_expanded(self):
         return len(self._untried_actions) == 0
@@ -89,8 +111,10 @@ class MCTSNode():
         # print('looking for best child')
         # print(len(self._untried_actions))
         # print(len(self.state.get_possible_actions(self.player_idx)))
-        probas = [(child.q() / child.n()) + c * np.sqrt(
-            (2 * np.log(self.n()) / child.n())) for child in self.children]
+        probas = [
+            child.q() + c * np.sqrt((1 * np.log(self.n()) / child.n()))
+            for child in self.children
+        ]
         return self.children[np.argmax(probas)]
 
     def rollout_policy(self, possible_actions):
@@ -124,17 +148,17 @@ class MCTSNode():
 
     def best_action(self):
         # print('looking for best action')
-        for i in trange(100):
+        for i in trange(10):
             node = self._tree_policy()
             # print(self.children)
             # print('tree policy done')
             # print(node.depth)
-            reward = node.rollout()
+            reward, actions = node.rollout()
             # print('rollout done')
             # print(i)
             # print(self._results)
             # print('rollout done')
-            node.backpropagate(reward)
+            node.backpropagate(reward, actions)
             # print('backpropagation done')
         # print('out for')
         # print(self.children)
