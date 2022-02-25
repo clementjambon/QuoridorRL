@@ -169,7 +169,9 @@ class QuoridorState:
             player_idx (int): index of the player
             target_position (_type_): targeted position
         """
+        # print("target: " + str(target_position))
         self.player_positions[player_idx] = target_position
+        # print("final position" + str(self.player_positions[player_idx]))
 
     def player_win(self, player_idx: int) -> bool:
         """Checks whether the provided player has won or not
@@ -357,6 +359,7 @@ class QuoridorState:
         if action.type == 0:
             if current_state.can_move_player(player_idx, action.player_pos):
                 # Move player
+                # print("moving")
                 current_state.move_player(player_idx, action.player_pos)
         else:
             if current_state.can_add_wall(player_idx, action.wall_position,
@@ -364,4 +367,6 @@ class QuoridorState:
                 # Add wall
                 current_state.add_wall(player_idx, action.wall_position,
                                        action.wall_direction)
+        # print("final position" +
+        #       str(current_state.player_positions[player_idx]))
         return current_state

@@ -24,7 +24,7 @@ def main():
     print('rendering')
     i = 0
     while not environment.done:
-        print(i)
+        print("Round " + str(i))
         i += 1
         # act
         print('acting')
@@ -32,6 +32,10 @@ def main():
         action = root.best_action()
         print('acting...')
         environment.act(action)
+        print("Position of PLAYER 0: " +
+              str(environment.state.player_positions[0]))
+        print("Position of PLAYER 1: " +
+              str(environment.state.player_positions[1]))
     print('GAME OVER')
 
 
