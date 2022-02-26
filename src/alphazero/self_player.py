@@ -1,5 +1,6 @@
 import os
 import pickle
+from concurrent.futures import ThreadPoolExecutor, wait
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
@@ -14,11 +15,14 @@ class SelfPlayer:
                  representation: QuoridorRepresentation,
                  save_dir: str,
                  nb_games=25000,
-                 nb_simulations=200) -> None:
+                 nb_simulations=200,
+                 max_workers=4) -> None:
         self.model = model
         # The number of games played for this iteration
         self.nb_games = nb_games
         self.nb_simulations = nb_simulations
+        self.max_workers = max_workers
+
         self.game_config = game_config
         self.environment = environment
         self.representation = representation
@@ -35,12 +39,18 @@ class SelfPlayer:
     def play_games(self):
         # Don't forget to put model in evaluation mode
         self.model.eval()
-        for i in range(self.nb_games):
-            print(f"Playing game {i}")
-            self.play_game(i)
+        # Use multithreading to play games
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            tasks = {
+                executor.submit(self.play_game, i)
+                for i in range(self.nb_games)
+            }
+        wait(tasks)
         return self.save_buffer()
 
     def play_game(self, game_idx):
+        print(f"Playing game {game_idx}")
+
         # Initialize a game
         state = QuoridorState(self.game_config)
         feature_planes = []

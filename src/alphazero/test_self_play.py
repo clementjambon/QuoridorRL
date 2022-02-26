@@ -34,7 +34,8 @@ if __name__ == "__main__":
                              environment,
                              representation,
                              dir_path,
-                             nb_games=1,
-                             nb_simulations=50)
+                             nb_games=1000,
+                             nb_simulations=100,
+                             max_workers=4)
 
     self_player.play_games()
