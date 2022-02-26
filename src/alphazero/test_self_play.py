@@ -12,8 +12,6 @@ from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer
 
 if __name__ == "__main__":
 
-    sys.settrace(None)
-
     # Set device used by torch
     device = torch.device(
         "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -37,6 +35,6 @@ if __name__ == "__main__":
                              representation,
                              dir_path,
                              nb_games=1,
-                             nb_simulations=100)
+                             nb_simulations=50)
 
     self_player.play_games()

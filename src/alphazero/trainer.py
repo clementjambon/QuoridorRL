@@ -1,4 +1,6 @@
 import pickle
+import os
+import torch
 
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
@@ -15,7 +17,7 @@ class GameDataset(Dataset):
     def load_games(self, game_files: list[str]):
         self.states = []
         for game_file in game_files:
-            with open(game_file) as handle:
+            with open(game_file, "rb") as handle:
                 self.states += pickle.load(handle)
 
     def __len__(self):
@@ -31,6 +33,7 @@ class Trainer:
                  device,
                  model: QuoridorModel,
                  game_files: list[str],
+                 dirname: str,
                  batch_size=32,
                  epochs=100,
                  regularization_param=1e-4) -> None:
@@ -38,6 +41,8 @@ class Trainer:
         self.model = model
         self.batch_size = batch_size
         self.epochs = epochs
+
+        self.dirname = dirname
 
         self.game_dataset = GameDataset(game_files)
         self.game_dataloader = DataLoader(self.game_dataset,
@@ -47,6 +52,11 @@ class Trainer:
         self.optimizer = Adam(self.model.parameters(),
                               lr=1e-2,
                               weight_decay=regularization_param)
+
+    def save_model(self):
+        torch.save(self.model.state_dict(),
+                   os.path.join(self.dirname,
+                                self.model.to_string() + ".pt"))
 
     def train(self):
 

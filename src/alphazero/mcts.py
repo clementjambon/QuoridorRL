@@ -1,7 +1,7 @@
 import torch
 from collections import defaultdict
 from math import sqrt
-from copy import deepcopy
+from copy import deepcopy, copy
 import numpy as np
 
 from alphazero import QuoridorRepresentation, QuoridorModel
@@ -54,6 +54,7 @@ class MCTS:
     def select_action(self,
                       environment: QuoridorEnv,
                       state: QuoridorState,
+                      previous_feature_planes,
                       nb_simulations: int = 800,
                       temperature: float = 1) -> tuple[int, np.ndarray]:
         # Selects an action provided the current state
@@ -64,6 +65,7 @@ class MCTS:
         # Compute the policy with MCTS
         policy = self.play_policy(environment,
                                   state,
+                                  previous_feature_planes,
                                   nb_simulations=nb_simulations,
                                   temperature=temperature)
 
@@ -120,60 +122,78 @@ class MCTS:
 
 # NOTE: make sure the searched state is in canonical form
 
+# Feature_planes provide the already computed feature_planes
+
     def search(self, environment: QuoridorEnv, state: QuoridorState,
-               feature_planes: list[np.ndarray]):
+               init_feature_planes: list[np.ndarray]):
         # TODO: filter valid actions!
 
-        state_str = state.to_string()
-        #print(f"Searching {state_str} with depth {len(feature_planes)}")
-        current_feature_plane = self.state_representation.generate_instant_planes(
-            state)
-        feature_planes.append(current_feature_plane)
+        feature_planes = deepcopy(init_feature_planes)
+        explored_branches = []
+        branch_value = 0
 
-        # If the searched state is not in the tree, EXPAND
-        if state_str not in self.tree:
-            state_planes = self.state_representation.generate_state_planes(
-                state, feature_planes)
-            # state_planes = np.expand_dims(state_planes, axis=0)
-            # state_planes = torch.from_numpy(state_planes.copy())
-            p, v = self.model(state_planes.unsqueeze(0))
-            p = p[0]
-            self.tree[state_str].pi_s = p
-            return v
+        # Search the tree
+        # TODO: deal with None cases
+        while True:
+            if state is None:
+                print("MCTS: search ended with None state!")
+                break
 
-        current_state_record = self.tree[state_str]
+            if state.done:
+                if state.winner == -1:
+                    branch_value = 0.0
+                else:
+                    branch_value = 1.0 if state.winner == state.current_player else -1.0
+                break
 
-        # Otherwise, select and iterate
-        action_idx = self.puct_action(environment, state, state_str)
-        current_action_record = current_state_record.actions[action_idx]
+            state_str = state.to_string()
+            #print(f"Searching {state_str} with depth {len(feature_planes)}")
+            current_feature_plane = self.state_representation.generate_instant_planes(
+                state)
+            feature_planes.append(current_feature_plane)
 
-        # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
-        # state = deepcopy(state)
+            # If the searched state is not in the tree, EXPAND
+            if state_str not in self.tree:
+                state_planes = self.state_representation.generate_state_planes(
+                    state, feature_planes)
+                p, v = self.model(state_planes.unsqueeze(0))
+                p = p[0]
+                self.tree[state_str].pi_s = p
+                branch_value = v
+                break
 
-        # Get next_state after taking action
-        next_state = environment.step_from_index(
-            state,
-            change_action_perspective(state.current_player, action_idx,
-                                      environment.grid_size))
-        # Search the next state
-        v = self.search(environment, next_state, feature_planes)
-        # NOTE: make sure to reverse the propagated value!
-        v = -v
+            # Otherwise, select and iterate
+            action_idx = self.puct_action(environment, state, state_str)
+
+            # Get next_state after taking action
+            state = environment.step_from_index(
+                state,
+                change_action_perspective(state.current_player, action_idx,
+                                          environment.grid_size))
+
+            # Track (state, action pairs)
+            explored_branches.append((state_str, action_idx))
+
+        # print(f"Backing up {len(explored_branches)} branches")
 
         # Backup values
         # NOTE: add virtual loss when adding multithreading!
-        current_state_record.N_s += 1
-        current_action_record.N_sa += 1
-        current_action_record.W_sa += v
-        current_action_record.Q_sa = current_action_record.W_sa / current_action_record.N_sa
+        for state_str, action_idx in reversed(explored_branches):
+            # NOTE: make sure to reverse the propagated value!
+            branch_value *= -1.0
 
-        # Return the value
-        return v
+            current_state_record = self.tree[state_str]
+            current_action_record = current_state_record.actions[action_idx]
+            current_state_record.N_s += 1
+            current_action_record.N_sa += 1
+            current_action_record.W_sa += branch_value
+            current_action_record.Q_sa = current_action_record.W_sa / current_action_record.N_sa
 
     # Returns the play policy by running nb_simulations
     def play_policy(self,
                     environment: QuoridorEnv,
                     state: QuoridorState,
+                    previous_feature_planes,
                     nb_simulations: int = 800,
                     temperature: float = 1):
 
@@ -181,11 +201,11 @@ class MCTS:
         for i in range(nb_simulations):
             # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
             init_state = deepcopy(state)
-            self.search(environment, init_state, [])
-            if (i + 1) % (nb_simulations // 10) == 0:
-                print(
-                    f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
-                )
+            self.search(environment, init_state, previous_feature_planes)
+            # if (i + 1) % (nb_simulations // 10) == 0:
+            #     print(
+            #         f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
+            #     )
 
         state_str = state.to_string()
         state_record = self.tree[state_str]

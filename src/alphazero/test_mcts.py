@@ -28,4 +28,7 @@ if __name__ == "__main__":
 
     mcts = MCTS(game_config, init_model, representation)
 
-    mcts.select_action(environment, state, nb_simulations=100, temperature=1.0)
+    mcts.select_action(environment,
+                       state, [],
+                       nb_simulations=100,
+                       temperature=1.0)

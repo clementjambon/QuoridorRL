@@ -33,6 +33,8 @@ class SelfPlayer:
         self.state_buffer = []
 
     def play_games(self):
+        # Don't forget to put model in evaluation mode
+        self.model.eval()
         for i in range(self.nb_games):
             print(f"Playing game {i}")
             self.play_game(i)
@@ -49,7 +51,10 @@ class SelfPlayer:
             # Take action following MCTS
             # TODO: add dynamic temperature behaviour
             action, policy = self.mcts.select_action(
-                self.environment, state, nb_simulations=self.nb_simulations)
+                self.environment,
+                state,
+                feature_planes,
+                nb_simulations=self.nb_simulations)
 
             # TODO: make actions invariant as well !!!!!!!!!!!!!!!!
 
@@ -92,7 +97,7 @@ class SelfPlayer:
         buffer_str = self.model.to_string(
         ) + f"-g{self.nb_games}-s{self.nb_simulations}.pkl"
         full_path = os.path.join(self.save_dir, buffer_str)
-        with open(full_path) as handle:
+        with open(full_path, "wb") as handle:
             pickle.dump(self.state_buffer,
                         handle,
                         protocol=pickle.HIGHEST_PROTOCOL)

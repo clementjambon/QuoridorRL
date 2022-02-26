@@ -172,11 +172,11 @@ class QuoridorModel(nn.Module):
 
         return p, v
 
-    def to_string(self, uuid_based=True):
+    def to_string(self, uuid_based=False):
         model_str = ""
         if uuid_based:
             model_str += self.id
         else:
-            model_str += self.creation_time
+            model_str += self.creation_time.strftime("%d-%m-%Y-%H-%M-%S")
         model_str += f"-r{self.nb_residual_blocks}-f{self.nb_filters}"
         return model_str
