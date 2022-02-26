@@ -2,6 +2,7 @@ import math
 from queue import PriorityQueue
 from collections import defaultdict
 import heapq as heap
+from utils import tile_to_coords
 
 
 class AdjNode:
@@ -26,12 +27,13 @@ class BoardGraph:
     def __init__(self, walls):
         """
         Represent the board as a graph
-        0-1- ...-8
+        /!\ tile nb ordering by column axis
+        0-9- ...-72
         |       .
-        9       .
+        1       .
         .
-        .       71
-        72- ...-80
+        .       
+        8 - ...71-80
         """
         self.grid_size = walls.shape[0] + 1
         self.v = self.grid_size * self.grid_size
@@ -142,3 +144,46 @@ class BoardGraph:
             for node in adjlist:
                 print(" -> {}".format(node.to_string()), end="")
             print(" \n")
+
+    def position_feature(self, agent_pos: int) -> int:
+        """
+        the simplest evaluation features is the number of columns that the pawn is away from his base line column
+        if the pawn is on his base line, the value is 0. If the pawn is on the goal line, the value is 8.
+        """
+        coords = tile_to_coords(agent_pos, self.grid_size)
+        return coords[0]  #rows and cols are strangely inversed
+
+    def position_difference(self, max_agent_pos: int,
+                            min_agent_pos: int) -> int:
+        """
+        This feature returns the difference between the position feature
+        of the Max player and the position feature of the Min player.
+        It actually indicates how good your progress is compared to the opponent’s progress.
+        """
+        return self.position_feature(max_agent_pos) - self.position_feature(
+            min_agent_pos)
+
+    def move_to_next_col_feature(self, agent_pos: int, a_target: int) -> int:
+        """
+        each player will try to place fences in such a way that his opponent has to
+        take as many steps as possible to get to his goal. To achieve this, 
+        the fences have to be placed so that the opponent has to move up and down the board.
+        This feature calculates the minimum number of steps that have to be taken to reach the next column
+        """
+        parentsMap, nodeCosts = self.dijkstra(agent_pos)
+        #print(nodeCosts)
+        if a_target != 0:
+            next_col = tile_to_coords(agent_pos, self.grid_size)[0] + 1
+        else:
+            next_col = tile_to_coords(agent_pos, self.grid_size)[0] - 1
+        #get the tiles nb of the column
+        vertices_next_col = []
+        for i in range(self.grid_size):
+            vertices_next_col.append(next_col * self.grid_size + i)
+        #find cost  of closest tile in next col
+        cost = float('inf')
+        for target in vertices_next_col:
+            #print(f'target : {target} cost : {nodeCosts[target]}')
+            if nodeCosts[target] < cost:
+                cost = nodeCosts[target]
+        return cost

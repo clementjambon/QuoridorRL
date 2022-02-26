@@ -3,7 +3,7 @@ import numpy as np
 from environment.quoridor_action import MoveAction, WallAction, QuoridorAction
 from environment.quoridor_state import QuoridorState, QuoridorStateHeuristicsAgents, QuoridorStateRandomAgents
 from environment.board_graph import BoardGraph
-from utils import convert_poscoord_to_posnodenb
+from utils.coords import coords_to_tile, tile_to_coords
 
 # ----------------------------
 # ENVIRONMENT VARIABLES
@@ -99,9 +99,12 @@ class QuoridorEnvAgents(QuoridorEnv):
             current_agent = self.state.agent0
         else:
             current_agent = self.state.agent1
-
         #get the board as a Graph object for easier path search
         board_graph = BoardGraph(self.state.walls)
+
+        #test
+        #board_graph.move_to_next_col_feature(current_agent.get_position(),
+        #                                     current_agent.get_targets()[0])
 
         #choose action this method depends on the type of Agents used
         action = current_agent.choose_action(
@@ -109,19 +112,23 @@ class QuoridorEnvAgents(QuoridorEnv):
 
         #execute chosen action
         if isinstance(action, MoveAction):
-            self.state.move_player(self.current_player, action.get_pos())
+            self.move_pawn(action.get_pos())
         else:
-            self.state.add_wall(self.current_player, action.get_pos(),
-                                action.get_dir())
-            node_pos = convert_poscoord_to_posnodenb(action.get_pos(),
-                                                     self.state.grid_size)
+            self.add_wall_graph(action.get_pos(), action.get_dir(),
+                                board_graph)
 
-            if action.get_dir() == 0:  #horizontal wall
-                board_graph.remove_edge(node_pos, node_pos + self.grid_size)
-                board_graph.remove_edge(node_pos + self.grid_size,
-                                        node_pos + 2 * self.grid_size)
-            else:  #vertical wall
-                board_graph.remove_edge(node_pos, node_pos + 1)
-                board_graph.remove_edge(node_pos + 1, node_pos + 2)
         # Update current player
         self.current_player = (self.current_player + 1) % NB_PLAYERS
+
+    def add_wall_graph(self, target_position, direction: int,
+                       board_graph: BoardGraph) -> bool:
+        super().add_wall(target_position, direction)
+        node_pos = coords_to_tile(target_position, self.state.grid_size)
+        if direction == 0:  #horizontal wall
+            board_graph.remove_edge(node_pos, node_pos + 1)
+            board_graph.remove_edge(node_pos + self.grid_size,
+                                    node_pos + self.grid_size + 1)
+        else:  #vertical wall
+            board_graph.remove_edge(node_pos, node_pos + self.grid_size)
+            board_graph.remove_edge(node_pos + 1,
+                                    node_pos + 1 + self.grid_size)

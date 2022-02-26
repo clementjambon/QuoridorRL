@@ -28,12 +28,3 @@ def coords_to_tile(coords, side_length: int):
     if i < side_length * side_length:
         return i
     return -1
-
-
-def convert_poscoord_to_posnodenb(posCoord: tuple[int, int],
-                                  grid_size: int) -> int:
-    '''
-    Return node nb in graph representation given coordinates in 2D array 'coords'.
-    '''
-    node_nb = posCoord[1] + grid_size * posCoord[0]
-    return node_nb
