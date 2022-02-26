@@ -56,7 +56,7 @@ class MCTS:
                       state: QuoridorState,
                       previous_feature_planes,
                       nb_simulations: int = 800,
-                      temperature: float = 1) -> tuple[int, np.ndarray]:
+                      temperature: float = 1):
         # Selects an action provided the current state
 
         # Don't forget to reset the tree
@@ -125,12 +125,12 @@ class MCTS:
 # Feature_planes provide the already computed feature_planes
 
     def search(self, environment: QuoridorEnv, state: QuoridorState,
-               init_feature_planes: list[np.ndarray]):
+               init_feature_planes):
         # TODO: filter valid actions!
 
         feature_planes = deepcopy(init_feature_planes)
         explored_branches = []
-        branch_value = 0
+        branch_value = 0.0
 
         # Search the tree
         # TODO: deal with None cases
@@ -143,7 +143,11 @@ class MCTS:
                 if state.winner == -1:
                     branch_value = 0.0
                 else:
-                    branch_value = 1.0 if state.winner == state.current_player else -1.0
+                    if state.winner == state.current_player:
+                        # In practice, this should not happen!
+                        branch_value = 1.0
+                    else:
+                        branch_value = -1.0
                 break
 
             state_str = state.to_string()

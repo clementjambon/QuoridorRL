@@ -114,8 +114,7 @@ class QuoridorEnv:
 
         return next_state
 
-    def can_move_pawn(self, state: QuoridorState,
-                      target_position: tuple[int, int]) -> bool:
+    def can_move_pawn(self, state: QuoridorState, target_position) -> bool:
         """Checks that a given player can move in a provided position
 
         Args:
@@ -187,7 +186,7 @@ class QuoridorEnv:
         return False
 
     def move_pawn(self, state: QuoridorState,
-                  target_position: tuple[int, int]) -> QuoridorState:
+                  target_position) -> QuoridorState:
         """Moves a player in a provided position
 
         Args:
@@ -217,8 +216,8 @@ class QuoridorEnv:
         state.winner = player_idx
         return player_won
 
-    def can_add_wall(self, state: QuoridorState,
-                     wall_position: tuple[int, int], direction: int) -> bool:
+    def can_add_wall(self, state: QuoridorState, wall_position,
+                     direction: int) -> bool:
         """Checks that a given player can add a wall
 
         Args:
@@ -270,7 +269,7 @@ class QuoridorEnv:
 
         return True
 
-    def add_wall(self, state: QuoridorState, wall_position: tuple[int, int],
+    def add_wall(self, state: QuoridorState, wall_position,
                  direction: int) -> QuoridorState:
         """Adds a wall requested by a specific player
 
@@ -289,8 +288,7 @@ class QuoridorEnv:
         return state
 
     # Returns the set of possible actions that the current player can take
-    def get_possible_actions(self,
-                             state: QuoridorState) -> list[QuoridorAction]:
+    def get_possible_actions(self, state: QuoridorState):
         """Returns a list with all the actions the current player can take
 
         Returns:

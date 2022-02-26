@@ -21,11 +21,11 @@ class TrainingConfig:
 
 class GameDataset(Dataset):
 
-    def __init__(self, game_files: list[str]) -> None:
+    def __init__(self, game_files) -> None:
         super().__init__()
         self.load_games(game_files)
 
-    def load_games(self, game_files: list[str]):
+    def load_games(self, game_files):
         self.states = []
         for game_file in game_files:
             with open(game_file, "rb") as handle:
@@ -40,8 +40,8 @@ class GameDataset(Dataset):
 
 class Trainer:
 
-    def __init__(self, device, model: QuoridorModel, game_files: list[str],
-                 dirname: str, training_config: TrainingConfig) -> None:
+    def __init__(self, device, model: QuoridorModel, game_files, dirname: str,
+                 training_config: TrainingConfig) -> None:
         self.device = device
         self.model = model
         self.batch_size = training_config.batch_size

@@ -41,7 +41,7 @@ class QuoridorRepresentation:
 
     # Generates full set of planes given pre-computed state planes (i.e pads with zero if not enough feature planes and adds constant valued planes)
     def generate_state_planes(self, current_state: QuoridorState,
-                              feature_planes: list[Tensor]):
+                              feature_planes):
         # First, get the most recent feature planes
         nb_recent_features = min(self.time_consistency, len(feature_planes))
         recent_feature_planes = feature_planes[-nb_recent_features:]
