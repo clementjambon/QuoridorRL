@@ -218,10 +218,10 @@ class MCTS:
         # If the temperature is zero, it is equivalent to returning the best action (i.e. deterministic policy)
         if temperature == 0:
             best_action = np.argmax(policy)
-            policy = np.zeros(self.nb_actions)
+            policy = np.zeros(self.nb_actions, dtype=np.float32)
             policy[best_action] = 1.0
             return policy
         else:
-            policy = np.power(policy, 1.0 / temperature)
+            policy = np.power(policy, 1.0 / temperature, dtype=np.float32)
             policy /= np.sum(policy)
             return policy

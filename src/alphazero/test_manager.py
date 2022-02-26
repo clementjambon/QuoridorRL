@@ -8,7 +8,7 @@ sys.path.insert(0,
 import torch
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
-from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer, SelfPlayConfig
+from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer, SelfPlayConfig, TrainingConfig, Manager
 
 if __name__ == "__main__":
 
@@ -33,7 +33,16 @@ if __name__ == "__main__":
                                      nb_simulations=50,
                                      max_workers=1)
 
-    self_player = SelfPlayer(init_model, game_config, environment,
-                             representation, dir_path, selfplay_config)
+    training_config = TrainingConfig()
 
-    self_player.play_games()
+    manager = Manager(device,
+                      nb_iterations=20,
+                      selfplay_history=4,
+                      game_config=game_config,
+                      environment=environment,
+                      representation=representation,
+                      save_dir=dir_path,
+                      selfplay_config=selfplay_config,
+                      training_config=training_config)
+
+    manager.iterate()

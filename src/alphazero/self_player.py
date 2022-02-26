@@ -1,27 +1,34 @@
 import os
 import pickle
 from concurrent.futures import ThreadPoolExecutor, wait
+import numpy as np
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
 
 
-class SelfPlayer:
+class SelfPlayConfig:
 
     def __init__(self,
-                 model: QuoridorModel,
-                 game_config: QuoridorConfig,
-                 environment: QuoridorEnv,
-                 representation: QuoridorRepresentation,
-                 save_dir: str,
                  nb_games=25000,
                  nb_simulations=200,
                  max_workers=4) -> None:
-        self.model = model
-        # The number of games played for this iteration
         self.nb_games = nb_games
         self.nb_simulations = nb_simulations
         self.max_workers = max_workers
+
+
+class SelfPlayer:
+
+    def __init__(self, model: QuoridorModel, game_config: QuoridorConfig,
+                 environment: QuoridorEnv,
+                 representation: QuoridorRepresentation, save_dir: str,
+                 selfplay_config: SelfPlayConfig) -> None:
+        self.model = model
+        # The number of games played for this iteration
+        self.nb_games = selfplay_config.nb_games
+        self.nb_simulations = selfplay_config.nb_simulations
+        self.max_workers = selfplay_config.max_workers
 
         self.game_config = game_config
         self.environment = environment
@@ -101,7 +108,8 @@ class SelfPlayer:
         for player, state_planes, policy in history:
             self.state_buffer.append(
                 (game_idx, state_planes, policy,
-                 reward if player == 0 else reward * -1.0))
+                 np.float32(reward) if player == 0 else np.float32(reward *
+                                                                   -1.0)))
 
     def save_buffer(self):
         buffer_str = self.model.to_string(

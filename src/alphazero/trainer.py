@@ -8,6 +8,17 @@ from torch.optim import Adam
 from alphazero.quoridor_model import QuoridorModel
 
 
+class TrainingConfig:
+
+    def __init__(self,
+                 batch_size=32,
+                 epochs=100,
+                 regularization_param=1e-4) -> None:
+        self.batch_size = batch_size
+        self.epochs = epochs
+        self.regularization_param = regularization_param
+
+
 class GameDataset(Dataset):
 
     def __init__(self, game_files: list[str]) -> None:
@@ -29,18 +40,12 @@ class GameDataset(Dataset):
 
 class Trainer:
 
-    def __init__(self,
-                 device,
-                 model: QuoridorModel,
-                 game_files: list[str],
-                 dirname: str,
-                 batch_size=32,
-                 epochs=100,
-                 regularization_param=1e-4) -> None:
+    def __init__(self, device, model: QuoridorModel, game_files: list[str],
+                 dirname: str, training_config: TrainingConfig) -> None:
         self.device = device
         self.model = model
-        self.batch_size = batch_size
-        self.epochs = epochs
+        self.batch_size = training_config.batch_size
+        self.epochs = training_config.epochs
 
         self.dirname = dirname
 
@@ -49,14 +54,15 @@ class Trainer:
                                           batch_size=self.batch_size,
                                           shuffle=True)
 
-        self.optimizer = Adam(self.model.parameters(),
-                              lr=1e-2,
-                              weight_decay=regularization_param)
+        self.optimizer = Adam(
+            self.model.parameters(),
+            lr=1e-2,
+            weight_decay=training_config.regularization_param)
 
     def save_model(self):
-        torch.save(self.model.state_dict(),
-                   os.path.join(self.dirname,
-                                self.model.to_string() + ".pt"))
+        model_path = os.path.join(self.dirname, self.model.to_string() + ".pt")
+        torch.save(self.model.state_dict(), model_path)
+        return model_path
 
     def train(self):
 
@@ -86,6 +92,7 @@ class Trainer:
                 p, v = self.model(states)
 
                 # Compute the loss
+                print(p.dtype, search_policies.dtype)
                 loss = F.mse_loss(v, rewards) + F.cross_entropy(
                     p, search_policies)
 
