@@ -1,7 +1,9 @@
+from platform import node
 import numpy as np
 from environment.quoridor_action import MoveAction, WallAction, QuoridorAction
-
-from environment.quoridor_state import QuoridorState, QuoridorStateRandomAgents
+from environment.quoridor_state import QuoridorState, QuoridorStateHeuristicsAgents, QuoridorStateRandomAgents
+from environment.board_graph import BoardGraph
+from utils import convert_poscoord_to_posnodenb
 
 # ----------------------------
 # ENVIRONMENT VARIABLES
@@ -86,19 +88,40 @@ class QuoridorEnvAgents(QuoridorEnv):
 
     def __init__(self, grid_size=9, max_walls=10) -> None:
         super().__init__(grid_size, max_walls)
-        self.state = QuoridorStateRandomAgents(self.grid_size, self.max_walls)
+        # uncomment for a game between 2 agents taht only make random choices
+        #self.state = QuoridorStateRandomAgents(self.grid_size, self.max_walls)
+        self.state = QuoridorStateHeuristicsAgents(self.grid_size,
+                                                   self.max_walls)
 
     def play(self):
+        #get current player as an Agent obj
         if self.current_player == 0:
-            action = self.state.agent0.choose_action(
-                self.state.get_possible_actions(self.current_player))
+            current_agent = self.state.agent0
         else:
-            action = self.state.agent1.choose_action(
-                self.state.get_possible_actions(self.current_player))
+            current_agent = self.state.agent1
+
+        #get the board as a Graph object for easier path search
+        board_graph = BoardGraph(self.state.walls)
+
+        #choose action this method depends on the type of Agents used
+        action = current_agent.choose_action(
+            self.state.get_possible_actions(self.current_player))
+
+        #execute chosen action
         if isinstance(action, MoveAction):
             self.state.move_player(self.current_player, action.get_pos())
         else:
             self.state.add_wall(self.current_player, action.get_pos(),
                                 action.get_dir())
+            node_pos = convert_poscoord_to_posnodenb(action.get_pos(),
+                                                     self.state.grid_size)
+
+            if action.get_dir() == 0:  #horizontal wall
+                board_graph.remove_edge(node_pos, node_pos + self.grid_size)
+                board_graph.remove_edge(node_pos + self.grid_size,
+                                        node_pos + 2 * self.grid_size)
+            else:  #vertical wall
+                board_graph.remove_edge(node_pos, node_pos + 1)
+                board_graph.remove_edge(node_pos + 1, node_pos + 2)
         # Update current player
         self.current_player = (self.current_player + 1) % NB_PLAYERS

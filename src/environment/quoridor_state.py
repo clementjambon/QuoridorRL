@@ -1,6 +1,6 @@
 import numpy as np
 from environment.quoridor_action import MoveAction, QuoridorAction, WallAction
-from agents.agents import RandomAgent
+from agents.agents import HeuristicAgent, RandomAgent, Agent
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
@@ -335,14 +335,14 @@ class QuoridorState:
         return possible_actions
 
 
-class QuoridorStateRandomAgents(QuoridorState):
+class QuoridorStateAgents(QuoridorState):
 
     def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
         super().__init__(grid_size, max_walls)
-        self.agent0 = RandomAgent(0, self.player_positions[0],
-                                  self.nb_walls[0], self.x_targets[0])
-        self.agent1 = RandomAgent(1, self.player_positions[1],
-                                  self.nb_walls[1], self.x_targets[1])
+        self.agent0 = Agent(0, self.player_positions[0], self.nb_walls[0],
+                            self.x_targets[0], grid_size)
+        self.agent1 = Agent(1, self.player_positions[1], self.nb_walls[1],
+                            self.x_targets[1], grid_size)
 
     #not efficient coding -> should be in Agent class but easier to reuse super()
     def move_player(self, player_idx: int,
@@ -360,4 +360,27 @@ class QuoridorStateRandomAgents(QuoridorState):
             self.agent0.nb_walls_placed += 1
         else:
             self.agent1.nb_walls_placed += 1
-        #TODO : update graph if this structure used
+
+
+class QuoridorStateRandomAgents(QuoridorStateAgents):
+
+    def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
+        super().__init__(grid_size, max_walls)
+        self.agent0 = RandomAgent(0, self.player_positions[0],
+                                  self.nb_walls[0], self.x_targets[0],
+                                  grid_size)
+        self.agent1 = RandomAgent(1, self.player_positions[1],
+                                  self.nb_walls[1], self.x_targets[1],
+                                  grid_size)
+
+
+class QuoridorStateHeuristicsAgents(QuoridorStateAgents):
+
+    def __init__(self, grid_size: int = 9, max_walls: int = 10) -> None:
+        super().__init__(grid_size, max_walls)
+        self.agent0 = HeuristicAgent(0, self.player_positions[0],
+                                     self.nb_walls[0], self.x_targets[0],
+                                     grid_size)
+        self.agent1 = HeuristicAgent(1, self.player_positions[1],
+                                     self.nb_walls[1], self.x_targets[1],
+                                     grid_size)
