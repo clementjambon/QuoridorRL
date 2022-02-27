@@ -3,6 +3,7 @@ from collections import defaultdict
 from math import sqrt
 from copy import deepcopy, copy
 import numpy as np
+import time
 
 from alphazero import QuoridorRepresentation, QuoridorModel
 from environment import QuoridorState, QuoridorEnv, QuoridorConfig
@@ -56,7 +57,8 @@ class MCTS:
                       state: QuoridorState,
                       previous_feature_planes,
                       nb_simulations: int = 800,
-                      temperature: float = 1):
+                      temperature: float = 1,
+                      limited_time: float = None):
         # Selects an action provided the current state
 
         # Don't forget to reset the tree
@@ -67,7 +69,8 @@ class MCTS:
                                   state,
                                   previous_feature_planes,
                                   nb_simulations=nb_simulations,
-                                  temperature=temperature)
+                                  temperature=temperature,
+                                  limited_time)
 
         # Return the action according to the provided policy distribution
         return change_action_perspective(
@@ -199,10 +202,17 @@ class MCTS:
                     state: QuoridorState,
                     previous_feature_planes,
                     nb_simulations: int = 800,
-                    temperature: float = 1):
+                    temperature: float = 1,
+                    limited_time: float = None):
 
-        # Perform nb_simulations
+        start_time = time.time()
+
+        # Perform nb_simulations (or stopped when the provided time is elapsed)
         for i in range(nb_simulations):
+            if limited_time is not None and time.time(
+            ) - start_time > limited_time:
+                break
+
             # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
             init_state = deepcopy(state)
             self.search(environment, init_state, previous_feature_planes)
