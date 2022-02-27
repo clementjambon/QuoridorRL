@@ -1,6 +1,6 @@
 import os
 import pickle
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 import numpy as np
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
@@ -35,9 +35,6 @@ class SelfPlayer:
         self.representation = representation
         self.save_dir = save_dir
 
-        # Initialize the MCTS module
-        self.mcts = MCTS(self.game_config, self.model, self.representation)
-
         self.state_buffer = []
 
     def clear(self):
@@ -58,8 +55,9 @@ class SelfPlayer:
     def play_game(self, game_idx):
         print(f"Playing game {game_idx}")
 
-        # Initialize a game
+        # Initialize a game and MCTS
         state = QuoridorState(self.game_config)
+        mcts = MCTS(self.game_config, self.model, self.representation)
         feature_planes = []
         history = []
 
@@ -67,7 +65,7 @@ class SelfPlayer:
         while not state.done:
             # Take action following MCTS
             # TODO: add dynamic temperature behaviour
-            action, policy = self.mcts.select_action(
+            action, policy = mcts.select_action(
                 self.environment,
                 state,
                 feature_planes,
@@ -87,9 +85,9 @@ class SelfPlayer:
 
             # Follow the selected action
             state = self.environment.step_from_index(state, action_idx=action)
-            print(
-                f"Reached state {state.to_string()}, terminal state: {state.done}"
-            )
+            # print(
+            #     f"Reached state {state.to_string()}, terminal state: {state.done}"
+            # )
 
         # Add the game reward and create a state buffer
 

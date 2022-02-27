@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )  #if you have a GPU with CUDA installed, this may speed up computation
 
-    game_config = QuoridorConfig(grid_size=5, max_walls=5)
+    game_config = QuoridorConfig(grid_size=5, max_walls=5, max_t=100)
 
     state = QuoridorState(game_config)
     environment = QuoridorEnv(game_config)

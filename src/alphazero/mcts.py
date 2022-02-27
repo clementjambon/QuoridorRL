@@ -139,7 +139,8 @@ class MCTS:
         # TODO: deal with None cases
         while True:
             if state is None:
-                print("MCTS: search ended with None state!")
+                # THIS SHOULD NOT HAPPEN
+                # print("MCTS: search ended with None state!")
                 break
 
             if state.done:
