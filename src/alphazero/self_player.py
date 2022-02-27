@@ -20,10 +20,11 @@ class SelfPlayConfig:
 
 class SelfPlayer:
 
-    def __init__(self, model: QuoridorModel, game_config: QuoridorConfig,
-                 environment: QuoridorEnv,
+    def __init__(self, device, model: QuoridorModel,
+                 game_config: QuoridorConfig, environment: QuoridorEnv,
                  representation: QuoridorRepresentation, save_dir: str,
                  selfplay_config: SelfPlayConfig) -> None:
+        self.device = device
         self.model = model
         # The number of games played for this iteration
         self.nb_games = selfplay_config.nb_games
@@ -42,6 +43,7 @@ class SelfPlayer:
 
     def play_games(self):
         # Don't forget to put model in evaluation mode
+        self.model.to(self.device)
         self.model.eval()
         # TODO: use multithreading to play games
         for i in range(self.nb_games):

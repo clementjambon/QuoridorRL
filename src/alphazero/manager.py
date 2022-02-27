@@ -47,9 +47,10 @@ class Manager:
                 current_model.load_state_dict(self.models[i - 1].state_dict())
 
             # Perform selfplay
-            selfplayer = SelfPlayer(current_model, self.game_config,
-                                    self.environment, self.representation,
-                                    self.save_dir, self.selfplay_config)
+            selfplayer = SelfPlayer(self.device, current_model,
+                                    self.game_config, self.environment,
+                                    self.representation, self.save_dir,
+                                    self.selfplay_config)
             self.selfplays_path.append(selfplayer.play_games())
 
             # Train the current network
