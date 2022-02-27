@@ -24,7 +24,7 @@ if __name__ == "__main__":
     representation = QuoridorRepresentation(game_config)
 
     init_model = QuoridorModel(device, game_config, representation)
-    init_model.to(device)
+    init_model = init_model.to(device)
 
     mcts = MCTS(game_config, init_model, representation)
 

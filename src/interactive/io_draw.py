@@ -17,10 +17,17 @@ def draw_gui(screen: pg.Surface, game_config: QuoridorConfig,
         action_text_pos = (0, game_config.grid_size * CELL_SIZE + 64)
         screen.blit(action_text, action_text_pos)
 
-        command_font =  pg.font.Font(None, 35)
+        wall_text = font.render(
+            f"P0 walls: {state.nb_walls[0]}/{game_config.max_walls} -- P1 walls: {state.nb_walls[1]}/{game_config.max_walls}",
+            True, TEXT_COLOR)
+        wall_text_pos = (0, game_config.grid_size * CELL_SIZE + 128)
+        screen.blit(wall_text, wall_text_pos)
+
+        command_font = pg.font.Font(None, 35)
         command_text = command_font.render(
-            f"Command: click on space bar to change action mode", True, (128, 128, 128))
-        command_text_pos = (0, GRID_SIZE * CELL_SIZE + 120 )
+            f"Command: click on space bar to change action mode", True,
+            (128, 128, 128))
+        command_text_pos = (0, game_config.grid_size * CELL_SIZE + 192)
         screen.blit(command_text, command_text_pos)
 
         if done:

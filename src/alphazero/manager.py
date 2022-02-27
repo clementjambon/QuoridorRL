@@ -45,6 +45,7 @@ class Manager:
             if i > 0:
                 # For now, we are just loading the state_dict of the past model
                 current_model.load_state_dict(self.models[i - 1].state_dict())
+            current_model = current_model.to(self.device)
 
             # Perform selfplay
             selfplayer = SelfPlayer(current_model, self.game_config,

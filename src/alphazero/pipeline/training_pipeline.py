@@ -44,7 +44,7 @@ if __name__ == "__main__":
                                load_dir=args.model_path,
                                nb_filters=args.nb_filters,
                                nb_residual_blocks=args.nb_residual_blocks)
-    init_model.to(device)
+    init_model = init_model.to(device)
 
     if args.output_dir is None:
         dir_path = os.path.abspath(

@@ -138,7 +138,7 @@ def main():
                           load_dir=model_path,
                           nb_filters=args.nb_filters,
                           nb_residual_blocks=args.nb_residual_blocks)
-    model.to(device)
+    model = model.to(device)
 
     # Initialize the feature planes that are generated from each visited state
     feature_planes = []
