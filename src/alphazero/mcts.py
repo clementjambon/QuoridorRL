@@ -164,7 +164,8 @@ class MCTS:
             if state_str not in self.tree:
                 state_planes = self.state_representation.generate_state_planes(
                     state, feature_planes)
-                p, v = self.model(state_planes.unsqueeze(0))
+                p, v = self.model(
+                    state_planes.unsqueeze(0).to(self.model.device))
                 p = p[0]
                 self.tree[state_str].pi_s = p
                 branch_value = v
