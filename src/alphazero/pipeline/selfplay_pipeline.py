@@ -57,7 +57,7 @@ if __name__ == "__main__":
                                      nb_simulations=args.nb_simulations,
                                      max_workers=args.max_workers)
 
-    self_player = SelfPlayer(device, init_model, game_config, environment,
+    self_player = SelfPlayer(init_model, game_config, environment,
                              representation, dir_path, selfplay_config)
 
     self_player.play_games()
