@@ -112,9 +112,8 @@ class QuoridorModel(nn.Module):
                  device,
                  game_config: QuoridorConfig,
                  representation: QuoridorRepresentation,
-                 time_consistency=8,
                  nb_residual_blocks=9,
-                 nb_filters=256,
+                 nb_filters=128,
                  kernel_size=3,
                  stride=1) -> None:
         super().__init__()
@@ -125,7 +124,7 @@ class QuoridorModel(nn.Module):
         self.nb_residual_blocks = nb_residual_blocks
         self.nb_filters = nb_filters
 
-        self.nb_channels = time_consistency * representation.nb_features + representation.nb_constants
+        self.nb_channels = representation.time_consistency * representation.nb_features + representation.nb_constants
 
         # NOTE: padding is applied to keep the same dimensions everywhere
 
