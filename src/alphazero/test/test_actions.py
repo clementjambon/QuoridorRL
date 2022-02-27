@@ -2,8 +2,8 @@ import sys
 import os
 
 # Required to properly append path (this sets the root folder to /src)
-sys.path.insert(0,
-                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from environment import MoveAction, WallAction
 from utils import change_action_perspective

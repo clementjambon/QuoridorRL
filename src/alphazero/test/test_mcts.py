@@ -2,13 +2,13 @@ import sys
 import os
 
 # Required to properly append path (this sets the root folder to /src)
-sys.path.insert(0,
-                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 import torch
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
-from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer, SelfPlayConfig
+from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
 
 if __name__ == "__main__":
 
@@ -26,14 +26,9 @@ if __name__ == "__main__":
     init_model = QuoridorModel(device, game_config, representation)
     init_model.to(device)
 
-    dir_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '../../data/self_play/'))
+    mcts = MCTS(game_config, init_model, representation)
 
-    selfplay_config = SelfPlayConfig(nb_games=1,
-                                     nb_simulations=50,
-                                     max_workers=1)
-
-    self_player = SelfPlayer(init_model, game_config, environment,
-                             representation, dir_path, selfplay_config)
-
-    self_player.play_games()
+    mcts.select_action(environment,
+                       state, [],
+                       nb_simulations=100,
+                       temperature=1.0)

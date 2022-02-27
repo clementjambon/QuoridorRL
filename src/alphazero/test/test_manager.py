@@ -2,8 +2,8 @@ import sys
 import os
 
 # Required to properly append path (this sets the root folder to /src)
-sys.path.insert(0,
-                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 import torch
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )  #if you have a GPU with CUDA installed, this may speed up computation
 
-    game_config = QuoridorConfig(grid_size=5, max_walls=5)
+    game_config = QuoridorConfig(grid_size=5, max_walls=5, max_t=100)
 
     state = QuoridorState(game_config)
     environment = QuoridorEnv(game_config)
@@ -29,9 +29,10 @@ if __name__ == "__main__":
     dir_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '../../data/self_play/'))
 
-    selfplay_config = SelfPlayConfig(nb_games=1,
-                                     nb_simulations=50,
-                                     max_workers=1)
+    selfplay_config = SelfPlayConfig(nb_games=1000,
+                                     nb_simulations=100,
+                                     max_workers=1,
+                                     max_t=100)
 
     training_config = TrainingConfig()
 
