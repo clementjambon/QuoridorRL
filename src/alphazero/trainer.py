@@ -64,6 +64,9 @@ class Trainer:
         torch.save(self.model.state_dict(), model_path)
         return model_path
 
+    def cross_entropy(self, p, q):
+        return -torch.sum(p * torch.log(q)) / q.size()[0]
+
     def train(self):
 
         # Run for every epochs
@@ -82,7 +85,7 @@ class Trainer:
                 #game_idx = data[0].to(self.device)
                 states = data[1].to(self.device)
                 search_policies = data[2].to(self.device)
-                rewards = data[3].to(self.device)
+                rewards = data[3].to(self.device).unsqueeze(dim=1)
 
                 # Reset gradient and loss
                 self.model.zero_grad()
@@ -90,11 +93,9 @@ class Trainer:
 
                 # Predict the policy and value
                 p, v = self.model(states)
-
                 # Compute the loss
-                print(p.dtype, search_policies.dtype)
-                loss = F.mse_loss(v, rewards) + F.cross_entropy(
-                    p, search_policies)
+                loss = F.mse_loss(v, rewards) + self.cross_entropy(
+                    search_policies, p)
 
                 epoch_loss += loss
                 epoch_data_size += states.shape[0]
