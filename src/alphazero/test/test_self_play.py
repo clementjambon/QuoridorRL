@@ -27,7 +27,7 @@ if __name__ == "__main__":
     init_model.to(device)
 
     dir_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '../../data/self_play/'))
+        os.path.join(os.path.dirname(__file__), '../../../data/self_play/'))
 
     selfplay_config = SelfPlayConfig(nb_games=1,
                                      nb_simulations=50,

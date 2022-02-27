@@ -70,7 +70,7 @@ class MCTS:
                                   previous_feature_planes,
                                   nb_simulations=nb_simulations,
                                   temperature=temperature,
-                                  limited_time)
+                                  limited_time=limited_time)
 
         # Return the action according to the provided policy distribution
         return change_action_perspective(

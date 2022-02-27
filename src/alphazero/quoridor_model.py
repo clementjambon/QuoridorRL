@@ -1,3 +1,4 @@
+from json import load
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -115,7 +116,8 @@ class QuoridorModel(nn.Module):
                  nb_residual_blocks=9,
                  nb_filters=128,
                  kernel_size=3,
-                 stride=1) -> None:
+                 stride=1,
+                 load_dir: str = None) -> None:
         super().__init__()
 
         self.device = device
@@ -153,6 +155,10 @@ class QuoridorModel(nn.Module):
         self.id = uuid.uuid1()
         self.creation_time = datetime.now()
 
+        # If provided load the model data
+        if load_dir is not None:
+            self.load_model(load_dir)
+
     def forward(self, x: Tensor):
 
         x.to(self.device)
@@ -179,3 +185,7 @@ class QuoridorModel(nn.Module):
             model_str += self.creation_time.strftime("%d-%m-%Y-%H-%M-%S")
         model_str += f"-r{self.nb_residual_blocks}-f{self.nb_filters}"
         return model_str
+
+    def load_model(self, load_dir: str):
+        self.load_state_dict(torch.load(load_dir))
+        self.eval()
