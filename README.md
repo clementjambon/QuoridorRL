@@ -168,3 +168,10 @@ Manager Config:
                         number of most recent selfplay records used for
                         training
 ```
+
+### GUI
+Trained models can be played agains using the above-mentioned GUI with
+```bash
+cd src/alphazero/pipeline
+python3 model_io.py [--model_path MODEL_PATH]
+```

@@ -8,13 +8,14 @@ if not pg.font:
     print("Warning, fonts disabled")
 
 # Required to properly append path (this sets the root folder to /src)
-sys.path.insert(0,
-                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state
 from alphazero import QuoridorModel, QuoridorRepresentation, MCTS
+from alphazero.pipeline import get_parser
 
 
 def play_model(mcts: MCTS, feature_planes, environment: QuoridorEnv,
@@ -27,7 +28,6 @@ def play_model(mcts: MCTS, feature_planes, environment: QuoridorEnv,
                                        feature_planes,
                                        limited_time=limited_time,
                                        temperature=0)
-    print(action_idx)
     state = environment.step_from_index(state, action_idx)
 
     # Add the new feature planes to existing feature planes
@@ -94,35 +94,51 @@ def handle_click(environment: QuoridorEnv, state: QuoridorState,
 
 def main():
 
+    # ----------------------------
+    # ARGUMENT PARSER
+    # ----------------------------
+    parser = get_parser()
+
+    args = parser.parse_args()
+
+    # ----------------------------
+    # IO PIPELINE
+    # ----------------------------
+
     # Set device used by torch
     device = torch.device(
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )  #if you have a GPU with CUDA installed, this may speed up computation
 
     # Initialize Quoridor Config
-    game_config = QuoridorConfig(grid_size=5, max_walls=5, max_t=100)
+    game_config = QuoridorConfig(grid_size=args.grid_size,
+                                 max_walls=args.max_walls,
+                                 max_t=args.max_t)
 
     # Initialize Quoridor Environment
     environment = QuoridorEnv(game_config)
 
     # Initialize Quoridor State Representation
-    representation = QuoridorRepresentation(game_config)
+    representation = QuoridorRepresentation(
+        game_config, time_consistency=args.time_consistency)
 
     # Initialize Quoridor State
     state = QuoridorState(game_config)
 
     # Load the model against which we want to play
-    if len(sys.argv) > 1:
-        print("test")
-        model_path = sys.argv[1]
-    else:
+    if args.output_dir is None:
         model_path = os.path.join(os.path.dirname(__file__),
-                                  '../../data/self_play/default-model.pt')
+                                  '../../../data/self_play/default-model.pt')
+    else:
+        model_path = args.model_path
 
     model = QuoridorModel(device,
                           game_config,
                           representation,
-                          load_dir=model_path)
+                          load_dir=model_path,
+                          nb_filters=args.nb_filters,
+                          nb_residual_blocks=args.nb_residual_blocks)
+    model.to(device)
 
     # Initialize the feature planes that are generated from each visited state
     feature_planes = []
