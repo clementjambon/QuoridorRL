@@ -1,6 +1,5 @@
 import sys
 import os
-import argparse
 
 # Required to properly append path (this sets the root folder to /src)
 sys.path.insert(
@@ -36,16 +35,23 @@ if __name__ == "__main__":
 
     state = QuoridorState(game_config)
     environment = QuoridorEnv(game_config)
-    representation = QuoridorRepresentation(game_config)
+    representation = QuoridorRepresentation(
+        game_config, time_consistency=args.time_consistency)
 
     init_model = QuoridorModel(device,
                                game_config,
                                representation,
-                               load_dir=args.model_path)
+                               load_dir=args.model_path,
+                               nb_filters=args.nb_filters,
+                               nb_residual_blocks=args.nb_residual_blocks)
     init_model.to(device)
 
-    dir_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '../../../data/self_play/'))
+    if args.output_dir is None:
+        dir_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__),
+                         '../../../data/self_play/'))
+    else:
+        dir_path = args.output_dir
 
     selfplay_config = SelfPlayConfig(nb_games=args.nb_games,
                                      nb_simulations=args.nb_simulations,
