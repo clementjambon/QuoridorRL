@@ -1,5 +1,6 @@
 import numpy as np
 from environment import QuoridorConfig
+from utils import string_to_coords
 
 # TODO: extand this in case of bigger grid_size
 XGRAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -35,7 +36,26 @@ class QuoridorState:
         # initialize the current player
         self.current_player = 0
 
-    def to_string(self, invariance=False, add_nb_walls=False):
+    def load_from_string(self, state_str: str):
+        splits = state_str.split(";")
+        # Map positions
+        self.player_positions[0] = string_to_coords(splits[0])
+        self.player_positions[1] = string_to_coords(splits[1])
+        # Map walls
+        for i in range(2, len(splits) - 4):
+            wall_position = string_to_coords(splits[i])
+            wall_direction = 0 if splits[i][2] == 'h' else 1
+            self.walls[wall_position] = wall_direction
+        # Map nb_walls
+        self.nb_walls[0] = int(splits[len(splits) - 4][3:])
+        self.nb_walls[1] = int(splits[len(splits) - 3][3:])
+        # Map current player
+        self.current_player = int(splits[len(splits) - 2][1])
+
+    def to_string(self,
+                  invariance=False,
+                  add_nb_walls=False,
+                  add_current_player=False):
         # invariance specifies whether we make it invariant to the current player or not
         # add_nb_walls specifies whether we add the number of remaining walls for each player at the end of the string
         state_str = ""
@@ -62,6 +82,9 @@ class QuoridorState:
             state_str += "p0:" + str(
                 invariant_nb_walls[0]) + ";" + "p1:" + str(
                     invariant_nb_walls[1]) + ";"
+
+        if add_current_player:
+            state_str += "p0" + ";"
 
         return state_str
         # return str(np.rot90(self.walls, 2 * self.current_player)) + str(
