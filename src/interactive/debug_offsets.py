@@ -1,7 +1,7 @@
 import pygame as pg
 
-from environment import INDIRECT_OFFSETS
-from interactive import INNER_CELL_SIZE, WALL_THICKNESS, CELL_SIZE, CELL_PADDING, GRID_SIZE, draw_vertical_wall, draw_horizontal_wall
+from environment import QuoridorConfig, INDIRECT_OFFSETS
+from interactive import INNER_CELL_SIZE, WALL_THICKNESS, CELL_SIZE, CELL_PADDING, draw_vertical_wall, draw_horizontal_wall
 from utils import add_offset, is_in_bound
 
 # ----------------------------
@@ -15,7 +15,8 @@ REQUIRED_WALLS_COLOR = (0, 0, 255)
 FORBIDDEN_WALLS_COLOR = (255, 0, 0)
 
 
-def draw_debug_offsets(screen, player_pos: tuple[int, int], offset_idx: int):
+def draw_debug_offsets(screen, game_config: QuoridorConfig, player_pos,
+                       offset_idx: int):
     """Draws an offset scheme from the INDIRECT_OFFSETS used in QuoridorState
 
     Args:
@@ -85,7 +86,7 @@ def draw_debug_offsets(screen, player_pos: tuple[int, int], offset_idx: int):
     for required_wall_offset, required_wall_direction in indirect_offsets[2]:
         wall_position = add_offset(player_pos, required_wall_offset)
 
-        if is_in_bound(wall_position, GRID_SIZE - 1):
+        if is_in_bound(wall_position, game_config.grid_size - 1):
             if required_wall_direction == 0:
                 draw_horizontal_wall(screen, required_horizontal_wall,
                                      wall_position[0], wall_position[1])
@@ -97,7 +98,7 @@ def draw_debug_offsets(screen, player_pos: tuple[int, int], offset_idx: int):
     for forbidden_wall_offset, forbidden_wall_direction in indirect_offsets[3]:
         wall_position = add_offset(player_pos, forbidden_wall_offset)
 
-        if is_in_bound(wall_position, GRID_SIZE - 1):
+        if is_in_bound(wall_position, game_config.grid_size - 1):
             if forbidden_wall_direction == 0:
                 draw_horizontal_wall(screen, forbidden_horizontal_wall,
                                      wall_position[0], wall_position[1])
