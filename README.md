@@ -1,6 +1,18 @@
 # QuoridorRL
 *an INF581 project by Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon*
 
+## Table of contents
+* [Getting started](#getting-started)
+* [Environment](#environment)
+* [Interactive version](#interactive-version)
+* [Heuristic agent](#heuristic-agent)
+* [MC-RAVE agent](#mc-rave-agent)
+* [AlphaZero agent](#alphazero-agent)
+    * [Self-play](#self-play)
+    * [Training](#training)
+    * [Manager](#manager)
+    * [GUI](#gui)
+
 ## Getting started
 In order to set up the project, please use a virtual environment that can be created and activated with
 ```bash
@@ -29,6 +41,11 @@ python3 game_io.py
 
 The parameters of the interactive version can be tuned with the constants provided in `src/interactive/io_constants.py`.
 
+## Heuristic agent
+To be completed...
+
+## MC-RAVE agent
+To be completed...
 
 ## AlphaZero agent
 The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**
