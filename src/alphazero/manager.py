@@ -37,6 +37,7 @@ class Manager:
     def iterate(self):
 
         for i in range(self.nb_iterations):
+            print(f"Manager: starting iteration {i}")
             # If it is the first iteration, we need to initialize a model
             # TODO: add upstream model params
             current_model = QuoridorModel(self.device, self.game_config,

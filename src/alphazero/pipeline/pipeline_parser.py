@@ -105,4 +105,18 @@ def get_parser() -> ArgumentParser:
                                 default=1e-4,
                                 help='learning rate used during training')
 
+    # ----------------------------
+    # MANAGER CONFIG
+    # ----------------------------
+    manager_group = parser.add_argument_group('Manager Config')
+    manager_group.add_argument('--nb_iterations',
+                               type=int,
+                               default=5,
+                               help='number of selfplay/training iterations')
+    manager_group.add_argument(
+        '--selfplay_history',
+        type=int,
+        default=2,
+        help='number of most recent selfplay records used for training')
+
     return parser
