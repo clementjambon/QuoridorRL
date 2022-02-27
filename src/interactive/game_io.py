@@ -9,8 +9,8 @@ if not pg.font:
 sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from environment import QuoridorEnv, QuoridorState, QuoridorConfig, INDIRECT_OFFSETS
-from interactive import CELL_SIZE, TEXT_COLOR, GRID_SIZE, ACTION_DESCRIPTIONS, CELL_PADDING, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR, MAX_WALLS
+from environment import QuoridorEnv, QuoridorState, QuoridorConfig
+from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state
 
 
@@ -57,7 +57,7 @@ def handle_click(environment: QuoridorEnv, state: QuoridorState,
 def main():
 
     # Initialize Quoridor Config
-    game_config = QuoridorConfig(grid_size=GRID_SIZE, max_walls=MAX_WALLS)
+    game_config = QuoridorConfig(grid_size=5, max_walls=5)
 
     # Initialize Quoridor Environment
     environment = QuoridorEnv(game_config)
@@ -125,11 +125,11 @@ def main():
                 action_mode = (action_mode + 1) % 3
         # draw
         screen.blit(background, (0, 0))
-        draw_board(screen, cell)
-        draw_state(screen, state, pawn_0, pawn_1, horizontal_wall,
+        draw_board(screen, game_config, cell)
+        draw_state(screen, game_config, state, pawn_0, pawn_1, horizontal_wall,
                    vertical_wall)
-        #draw_debug_offsets(screen, (5, 5), 11)
-        draw_gui(screen, state, action_mode, state.done)
+        #draw_debug_offsets(screen, game_config, (5, 5), 11)
+        draw_gui(screen, game_config, state, action_mode, state.done)
         pg.display.flip()
 
     pg.quit()

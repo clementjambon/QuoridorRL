@@ -18,12 +18,6 @@ PAWN_1_COLOR = (0, 0, 0)
 TEXT_COLOR = (10, 10, 10)
 
 # ----------------------------
-# GAME PARAMETERS
-# ----------------------------
-GRID_SIZE = 5
-MAX_WALLS = 10  # maximum number of walls a user can use
-
-# ----------------------------
 # TEXT
 # ----------------------------
 ACTION_DESCRIPTIONS = ["Move pawn", "Add horizontal wall", "Add vertical wall"]
