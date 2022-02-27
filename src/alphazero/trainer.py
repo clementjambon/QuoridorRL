@@ -13,10 +13,12 @@ class TrainingConfig:
     def __init__(self,
                  batch_size=32,
                  epochs=100,
-                 regularization_param=1e-4) -> None:
+                 regularization_param=1e-4,
+                 learning_rate=1e-3) -> None:
         self.batch_size = batch_size
         self.epochs = epochs
         self.regularization_param = regularization_param
+        self.learning_rate = learning_rate
 
 
 class GameDataset(Dataset):
@@ -56,7 +58,7 @@ class Trainer:
 
         self.optimizer = Adam(
             self.model.parameters(),
-            lr=1e-2,
+            lr=training_config.learning_rate,
             weight_decay=training_config.regularization_param)
 
     def save_model(self):

@@ -1,4 +1,3 @@
-from email.policy import default
 import sys
 import os
 import argparse
@@ -11,32 +10,14 @@ import torch
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel, SelfPlayer, SelfPlayConfig
+from alphazero.pipeline import get_parser
 
 if __name__ == "__main__":
 
     # ----------------------------
     # ARGUMENT PARSER
     # ----------------------------
-    parser = argparse.ArgumentParser(
-        description='Collect game data from self-play.')
-    parser.add_argument('--nb_games',
-                        type=int,
-                        default=1000,
-                        help='the number of games played with self-play')
-    parser.add_argument(
-        '--nb_simulations',
-        type=int,
-        default=100,
-        help='the number of tree search performed before taking an action')
-    parser.add_argument('--max_workers',
-                        type=int,
-                        default=4,
-                        help='the number of parallel workers')
-    parser.add_argument(
-        '--model_path',
-        type=str,
-        default=None,
-        help='the path of the model used to generate self-plays')
+    parser = get_parser()
 
     args = parser.parse_args()
 
@@ -49,7 +30,9 @@ if __name__ == "__main__":
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )  #if you have a GPU with CUDA installed, this may speed up computation
 
-    game_config = QuoridorConfig(grid_size=5, max_walls=5, max_t=100)
+    game_config = QuoridorConfig(grid_size=args.grid_size,
+                                 max_walls=args.max_walls,
+                                 max_t=args.max_t)
 
     state = QuoridorState(game_config)
     environment = QuoridorEnv(game_config)
