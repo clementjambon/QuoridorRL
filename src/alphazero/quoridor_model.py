@@ -113,7 +113,7 @@ class QuoridorModel(nn.Module):
                  device,
                  game_config: QuoridorConfig,
                  representation: QuoridorRepresentation,
-                 nb_residual_blocks=9,
+                 nb_residual_blocks=10,
                  nb_filters=128,
                  kernel_size=3,
                  stride=1,

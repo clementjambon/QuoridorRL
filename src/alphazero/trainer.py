@@ -74,9 +74,6 @@ class Trainer:
         # Run for every epochs
         print("Starting training...")
         for epoch in range(self.epochs):
-            print(
-                f"Running epoch {epoch}/{self.epochs} with {len(self.game_dataloader)} batches of size {self.batch_size}..."
-            )
             # Turn model in training mode
             self.model.train()
 
@@ -118,4 +115,6 @@ class Trainer:
             epoch_loss /= epoch_data_size
 
             # Print epoch loss
-            print(f'Epoch {epoch} completed. Train loss: {epoch_loss:.6f}')
+            print(
+                f'Epoch {epoch}/{self.epochs} completed. Train loss: {epoch_loss:.6f}'
+            )
