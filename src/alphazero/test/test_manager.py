@@ -24,7 +24,7 @@ if __name__ == "__main__":
     representation = QuoridorRepresentation(game_config)
 
     init_model = QuoridorModel(device, game_config, representation)
-    init_model.to(device)
+    init_model = init_model.to(device)
 
     dir_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '../../data/self_play/'))
