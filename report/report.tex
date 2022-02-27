@@ -1,0 +1,96 @@
+\documentclass[journal, a4paper]{IEEEtran}
+
+\usepackage{graphicx}   
+\usepackage{url}        
+\usepackage{amssymb}
+\usepackage{amsmath}    
+
+% Some useful/example abbreviations for writing math
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\ypred}{\mathbf{\hat y}}
+\newcommand{\yp}{{\hat y}}
+
+\newif\ifanonymous
+\anonymoustrue
+
+\begin{document}
+
+% Define document title, do NOT write author names for the initial submission
+\title{QuoridorRL: solving a two-player strategy game with reinforcement learning}
+\ifanonymous
+\author{Anonymous Authors}
+\else
+\author{Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon}
+\fi
+\maketitle
+
+% Write abstract here
+\begin{abstract}
+
+\end{abstract}
+
+% Each section begins with a \section{title} command
+\section{Introduction}
+\label{sec:intro}
+
+Insist on the following challenges:
+- not much work before
+- no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied)
+- large state space, large branching spaces which bound exhaustive tree search methods to failure
+
+In addition to this paper, we provide the sources of our code at  \footnote{Source: \url{#}}. 
+
+In the following, we first review prior approaches to provide robust and human-level control agents in two-player games with large complexities (section \ref{sec:background}), then we describe our implementation of the environment (section \ref{sec:environment}) and the models we used to solve it (section \ref{sec:models}), followed lastly by our experiments and resulting discussion (section \ref{sec:results}).
+
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{Complexity}
+\label{ssec:complexity}
+Describe the state and branching complexity of the game.
+
+\subsection{Training without human knowledge}
+\label{ssec:human-knowledge}
+
+As seen in paragraph \ref{ssec:complexity}, \textit{Quoridor} is a game with very high state and branching complexities. Consequently, given the existing computational resources and considering that a decision must be provided by our agent in a moderately realistic amount of time, we cannot perform an exhaustive tree search such as MinMax. Therefore, we turned to an \textit{AlphaGo} approach as presented in \cite{alphago}.
+
+In order to perform Monte Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we turned to the \textit{"self-play"} approach initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}.
+
+\section{Environment}
+\label{sec:environment}
+
+As an introduction = environment set up from scratch => coding the came logics + choose consistent state and action spaces representations (and/or) wrapper
+
+\subsection{Game logic}
+
+\subsection{State and action representations}
+
+\subsection{GUI}
+We used \textit{Pygame}.
+
+
+\section{Models}
+\label{sec:models}
+
+\subsection{AlphaZero agent}
+
++ choice of architecture (see appendix)
+
+
+\section{Results and Discussion}
+\label{sec:results}
+
+
+\section{Conclusions}
+\label{sec:conclusion}
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\newpage
+\section*{Appendix}
+This is the place to put work that you did but is not essential to understand the paper: additional results and tables, lengthy proofs and derivations, \ldots. Material here does not count towards page limit (but also it will be optional for the reviewer/teacher to work through). 
+\end{document}
