@@ -43,19 +43,9 @@ class SelfPlayer:
     def play_games(self):
         # Don't forget to put model in evaluation mode
         self.model.eval()
-        # Use multithreading to play games
-        with ProcessPoolExecutor(max_workers=self.max_workers) as executor:
-            tasks = [
-                executor.submit(self.play_game, i)
-                for i in range(self.nb_games)
-            ]
-            for future in as_completed(tasks):
-                try:
-                    data = future.result()
-                except Exception as exc:
-                    print(f"Generated an exception: {exc}")
-                else:
-                    self.save_buffer += data
+        # TODO: use multithreading to play games
+        for i in range(self.nb_games):
+            self.play_game(i)
 
         return self.save_buffer()
 
@@ -67,7 +57,6 @@ class SelfPlayer:
         mcts = MCTS(self.game_config, self.model, self.representation)
         feature_planes = []
         history = []
-        game_buffer = []
 
         # Play the game
         while not state.done:
@@ -112,12 +101,10 @@ class SelfPlayer:
         print(f"Completed one self-play game won by {state.winner}")
 
         for player, state_planes, policy in history:
-            game_buffer.append(
+            self.state_buffer.append(
                 (game_idx, state_planes, policy,
                  np.float32(reward) if player == 0 else np.float32(reward *
                                                                    -1.0)))
-
-        return game_buffer
 
     def save_buffer(self):
         buffer_str = self.model.to_string(
