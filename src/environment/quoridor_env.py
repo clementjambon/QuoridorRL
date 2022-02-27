@@ -90,7 +90,7 @@ class QuoridorEnv:
             # TODO: remove this in production (should not be triggered)
             if not self.can_move_pawn(state, target_pos):
                 print(
-                    f"Cannot move player at position {target_pos} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}!"
+                    f"Cannot move player {state.current_player} at position {target_pos} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}!"
                 )
                 return
 
@@ -109,7 +109,7 @@ class QuoridorEnv:
             # TODO: remove this in production (should not be triggered)
             if not self.can_add_wall(state, wall_position, wall_direction):
                 print(
-                    f"Cannot add wall at position {wall_position} and with direction {wall_direction} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}"
+                    f"{state.current_player} cannot add wall at position {wall_position} and with direction {wall_direction} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}"
                 )
                 return
 

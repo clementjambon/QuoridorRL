@@ -25,6 +25,7 @@ def main():
         state.load_from_string(sys.argv[1])
         print(sys.argv[1])
         print(state.to_string(add_nb_walls=True, add_current_player=True))
+        print(state.walls)
 
     action_mode = 0
 
