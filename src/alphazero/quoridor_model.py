@@ -139,10 +139,10 @@ class QuoridorModel(nn.Module):
         self.bn1 = nn.BatchNorm2d(nb_filters)
 
         # Residual tower
-        self.residual_blocks = [
+        self.residual_blocks = nn.ModuleList([
             ResidualBlock(nb_filters, kernel_size, stride)
             for _ in range(self.nb_residual_blocks)
-        ]
+        ])
 
         # Policy head (the output is now (grid_size-1)x(grid_size-1)x2 for walls and grid_sizexgrid_size for pawn moves)
         self.policy_head = FlatPolicyHead(nb_filters, self.grid_size,
