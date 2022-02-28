@@ -127,25 +127,28 @@ In order to visualize and play games abstracted by the aforementioned logic, we 
 \label{sec:models}
 
 \subsection{MC-RAVE}
-In order to solve such a two-player strategy game, MCTS has often been used since it is a classical tree search method \cite{mcts-review}. In particular, MC-RAVE \cite{mc-rave} is an algorithm based on MCTS with an improvement on the value fonction $Q$ which is used. We simulate by self-play $N(s)$ games from state $s$. For a given state $s$ and an action $a$, the classical MCTS value fonction was:
+\label{ssec:mc-rave}
+In order to solve complex two-player strategy games, \textit{MCTS} has proven to be useful (cf. \cite{mcts-review}). However, when the state and branching complexities grow large, more samples need to be generated. \textit{MC-RAVE}\cite{mc-rave} tackles this issue by extrapolating on data collected w.r.t. the action space.
+
+More particularly, in \textit{MCTS}, we simulate by self-play $N(s)$ games from state $s$. For a given state $s$ and an action $a$, the value fonction can then be approximated with:
 $$Q(s,a) = \frac{1}{N(s,a)} \sum_{i=1}^{N(s)} \mathbf{1}_{i}(s,a)z_i$$
 where $N(s)$ is the number of simulations starting from state $s$, $\mathbf{1}_{i}(s,a)$ an indicator function returning 1 if action $a$ was selected in state $s$ during the $i$-th simulation, $N(s,a):=\sum_{i=1}^{N(s)} \mathbf{1}_{i}(s,a)$ the number of simulations in which action $a$ was selected in state $s$, and $z_i$ the final outcome of the $i$-th simulation.
 
-MCTS consists in updating a \textit{search tree}. At each simulation, we use either a \textit{tree policy} or a \textit{default policy} to choose next action. The tree policy is used when the current state is represented in the search tree and it consists in selecting the best child. Otherwise, the default policy is used, what means in our case that we select uniformly at random one action among all possible actions.
+\textit{MCTS} consists in updating a \textit{search tree}. For each simulation, we use either a \textit{tree policy} or a \textit{default policy} to choose the next action. The tree policy is used when the current state is represented in the search tree and boils down to the selection of the best child. Otherwise, a default policy is used: we select at random one action among the set of possible actions.
 
-The main issue of this algorithm is that it needs a lot of simulations to estimate the value $Q(s,a)$. Rapid Action Value Estimation (RAVE) \cite{mc-rave} tackles this issue by providing a way to quickly estimate the value of an action, thanks to the \textit{all-moves-as-first} (AMAF) heuristic. The main idea is that we suppose each action has a global value, no matter when it is played. So we can estimate the value of an action $a$ in state $s$ as follows:
+The main issue with this algorithm lies in the huge number of simulations required to estimate the action value $Q(s,a)$. \textit{Rapid Action Value Estimation} (\textit{RAVE}) \cite{mc-rave} tackles this issue by providing a way to quickly estimate the value of an action thanks to the \textit{all-moves-as-first} (\textit{AMAF}) heuristic. The main idea is that to assume that each action has a global value, no matter when it is played. Therefore, we can estimate the value of an action $a$ in state $s$ as follows:
 $$\tilde Q(s,a) = \frac{1}{\tilde N(s,a)} \sum_{i=1}^{N(s)} \mathbf{\tilde 1}_{i}(s,a)z_i$$
-where $\mathbf{\tilde 1}_{i}(s,a)$ is an indicator function returning 1 if state $s$ was encountered at any step $t$ of the $i$-th simulation, and action $a$ was selected at any state $u\geq t$, and $\tilde N(s,a):=\sum_{i=1}^{N(s)} \mathbf{\tilde 1}_{i}(s,a)$ the number of simulations used to estimate the AMAF value. So in RAVE algorithm, rather than looking at simulations where action $a$ was selected in state $s$, we look at all simulations where action $a$ was selected \textit{after} state $s$. It is faster to compute, but less accurate.
+where $\mathbf{\tilde 1}_{i}(s,a)$ is an indicator function returning 1 if state $s$ was encountered at any step $t$ of the $i$-th simulation, and action $a$ was selected at any state $u\geq t$, and $\tilde N(s,a):=\sum_{i=1}^{N(s)} \mathbf{\tilde 1}_{i}(s,a)$ the number of simulations used to estimate the \textit{AMAF} value. So in \textit{RAVE} algorithm, rather than looking at simulations where action $a$ was selected in state $s$, we look at all simulations where action $a$ was selected \textit{after} state $s$. It is faster to compute, but less accurate.
 
-MC-RAVE \cite{mc-rave} simply consists in a trade-off between previous MCTS and RAVE, by using the following $Q$ value:
+\textit{MC-RAVE} simply consists in a trade-off between conventional \textit{MCTS} and \textit{RAVE}, by mixing both estimated action values:
 $$Q_*(s,a) = (1-\beta(s,a))Q(s,a) + \beta(s,a)\tilde Q(s,a)$$
-We use a hand-crafted schedule proposed in the same paper:
+We use a handcrafted schedule proposed in the same paper\cite{mc-rave}:
 $$\beta(s,a) = \sqrt[]{\frac{k}{3N(s)+k}}$$
 with $k=1000$.
 
-Finally, we use UCT-RAVE \cite{mc-rave} to give a bonus to exploration:
+Finally, we use \textit{UCT-RAVE} \cite{mc-rave} to favor exploration:
 $$Q_*^+(s,a) = Q_*(s,a) + c\:\:\sqrt[]{\frac{\log N(s)}{N(s,a)}}$$
-with $c$ a trade-off parameter.
+with $c$  as a mixing parameter.
 
 \subsection{AlphaZero agent}
 \label{ssec:alphazero}
