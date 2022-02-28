@@ -2,6 +2,7 @@ import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, as_completed
 import numpy as np
+from pygame import init
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
@@ -12,10 +13,14 @@ class SelfPlayConfig:
     def __init__(self,
                  nb_games=25000,
                  nb_simulations=200,
-                 max_workers=4) -> None:
+                 max_workers=4,
+                 initial_temperature=1.0,
+                 tempered_steps=20) -> None:
         self.nb_games = nb_games
         self.nb_simulations = nb_simulations
         self.max_workers = max_workers
+        self.initial_temperature = initial_temperature
+        self.tempered_steps = tempered_steps
 
 
 class SelfPlayer:
@@ -26,6 +31,7 @@ class SelfPlayer:
                  selfplay_config: SelfPlayConfig) -> None:
         self.model = model
         # The number of games played for this iteration
+        self.selfplay_config = selfplay_config
         self.nb_games = selfplay_config.nb_games
         self.nb_simulations = selfplay_config.nb_simulations
         self.max_workers = selfplay_config.max_workers
@@ -61,14 +67,13 @@ class SelfPlayer:
         # Play the game
         while not state.done:
             # Take action following MCTS
-            # TODO: add dynamic temperature behaviour
+            temperature = self.selfplay_config.initial_temperature if state.t < self.selfplay_config.tempered_steps else 0.0
             action, policy = mcts.select_action(
                 self.environment,
                 state,
                 feature_planes,
-                nb_simulations=self.nb_simulations)
-
-            # TODO: make actions invariant as well !!!!!!!!!!!!!!!!
+                nb_simulations=self.nb_simulations,
+                temperature=temperature)
 
             # Compute state planes
             current_feature_planes = self.representation.generate_instant_planes(
@@ -82,9 +87,9 @@ class SelfPlayer:
 
             # Follow the selected action
             state = self.environment.step_from_index(state, action_idx=action)
-            # print(
-            #     f"Reached state {state.to_string()}, terminal state: {state.done}"
-            # )
+            print(
+                f"Reached state {state.to_string(add_nb_walls=True, add_current_player=True)}, terminal state: {state.done}"
+            )
 
         # Add the game reward and create a state buffer
 

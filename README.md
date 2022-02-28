@@ -88,6 +88,12 @@ Self-play config:
   --nb_simulations NB_SIMULATIONS
                         number of tree search performed before taking an
                         action
+  --initial_temperature INITIAL_TEMPERATURE
+                        temperature applied for the search policy at the
+                        beginning of each self-play game (see tempered_state
+                        for the number of --tempered_states)
+  --tempered_steps TEMPERED_STEPS
+                        number of turns during which temperature is applied
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
@@ -168,6 +174,12 @@ Self-play config:
   --nb_simulations NB_SIMULATIONS
                         number of tree search performed before taking an
                         action
+  --initial_temperature INITIAL_TEMPERATURE
+                        temperature applied for the search policy at the
+                        beginning of each self-play game (see tempered_state
+                        for the number of --tempered_states)
+  --tempered_steps TEMPERED_STEPS
+                        number of turns during which temperature is applied
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
