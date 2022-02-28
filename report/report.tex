@@ -1,6 +1,7 @@
 \documentclass[journal, a4paper]{IEEEtran}
 
 \usepackage{graphicx}   
+\usepackage{hyperref} 
 \usepackage{url}        
 \usepackage{amssymb}
 \usepackage{amsmath}    
@@ -41,7 +42,7 @@ Insist on the following challenges:
 - no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied)
 - large state space, large branching spaces which bound exhaustive tree search methods to failure
 
-In addition to this paper, we provide the sources of our code at  \footnote{Source: \url{#}}. 
+In addition to this paper, we provide the sources of our code at  \footnote{Source: \url{}}. 
 
 In the following, we first review prior approaches to provide robust and human-level control agents in two-player games with large complexities (section \ref{sec:background}), then we describe our implementation of the environment (section \ref{sec:environment}) and the models we used to solve it (section \ref{sec:models}), followed lastly by our experiments and resulting discussion (section \ref{sec:results}).
 
@@ -69,12 +70,22 @@ In order to perform Monte Carlo Tree Search over the large complexity space of \
 
 As an introduction = environment set up from scratch => coding the came logics + choose consistent state and action spaces representations (and/or) wrapper
 
+In order to limit the computational burden due to the very large complexity of the game in its original configuration, we chose to simplify the state space by restricting ourselves to the following rules:
+\begin{itemize}
+    \item the board has size $5\times 5$ (instead of $9\times 9$)
+    \item each player can add at most $5$ walls (instead of $10$)
+    \item the game can last at most $100$ turns, after which it is considered a "draw"
+\end{itemize}
+
 \subsection{Game logic}
+Although the game logic could be implemented by relying on a graph as suggested in (cf. Rebecca), we chose a different intrinsic representation.
+Game logic = coded from scratch. Although an easy, 
 
 \subsection{State and action representations}
+Intrinsic representation = 
 
-\subsection{GUI}
-We used \textit{Pygame}.
+\subsection{User interface}
+In order to visualize and play games abstracted by the aforementioned logic, we provide a user interface with parameters that can be tuned according to the chosen configuration of the game. To this extent, we used the python \textit{SDL}-based library \textit{PyGame}\cite{pygame}.
 
 
 \section{Models}
@@ -82,6 +93,7 @@ We used \textit{Pygame}.
 
 \subsection{AlphaZero agent}
 
+As mentioned in section \ref{sec:background}, \textit{Quoridor} is a typical example of a two-player zero-sum game with a very high complexity. As a consequence
 + choice of architecture (see appendix)
 
 In evaluation mode, a time parameter can be given and limit the MCTS (i.e. tree searches will be performed as long as the agent can do it)
