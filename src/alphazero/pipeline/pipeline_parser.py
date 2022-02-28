@@ -66,6 +66,18 @@ def get_parser() -> ArgumentParser:
         default=4,
         help='number of parallel workers (DISABLED for now)')
     selfplay_group.add_argument(
+        '--initial_temperature',
+        type=float,
+        default=1.0,
+        help=
+        "temperature applied for the search policy at the beginning of each self-play game (see tempered_state for the number of --tempered_states)"
+    )
+    selfplay_group.add_argument(
+        '--tempered_steps',
+        type=int,
+        default=20,
+        help="number of turns during which temperature is applied")
+    selfplay_group.add_argument(
         '--model_path',
         type=str,
         default=None,

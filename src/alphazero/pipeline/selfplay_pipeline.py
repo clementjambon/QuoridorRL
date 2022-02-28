@@ -53,9 +53,12 @@ if __name__ == "__main__":
     else:
         dir_path = args.output_dir
 
-    selfplay_config = SelfPlayConfig(nb_games=args.nb_games,
-                                     nb_simulations=args.nb_simulations,
-                                     max_workers=args.max_workers)
+    selfplay_config = SelfPlayConfig(
+        nb_games=args.nb_games,
+        nb_simulations=args.nb_simulations,
+        max_workers=args.max_workers,
+        initial_temperature=args.initial_temperature,
+        tempered_steps=args.tempered_steps)
 
     self_player = SelfPlayer(init_model, game_config, environment,
                              representation, dir_path, selfplay_config)

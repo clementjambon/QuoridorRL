@@ -27,7 +27,7 @@ def play_model(mcts: MCTS, feature_planes, environment: QuoridorEnv,
                                        state,
                                        feature_planes,
                                        limited_time=limited_time,
-                                       temperature=0)
+                                       temperature=0.0)
     state = environment.step_from_index(state, action_idx)
 
     # Add the new feature planes to existing feature planes

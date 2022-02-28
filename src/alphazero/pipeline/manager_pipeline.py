@@ -59,9 +59,12 @@ if __name__ == "__main__":
         regularization_param=args.regularization_param,
         learning_rate=args.learning_rate)
 
-    selfplay_config = SelfPlayConfig(nb_games=args.nb_games,
-                                     nb_simulations=args.nb_simulations,
-                                     max_workers=args.max_workers)
+    selfplay_config = SelfPlayConfig(
+        nb_games=args.nb_games,
+        nb_simulations=args.nb_simulations,
+        max_workers=args.max_workers,
+        initial_temperature=args.initial_temperature,
+        tempered_steps=args.tempered_steps)
 
     manager = Manager(device,
                       nb_iterations=args.nb_iterations,
