@@ -5,6 +5,10 @@ import copy
 from utils import add_offset, is_in_bound
 from utils import PathFinder
 
+XGRAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+YGRAD = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
+DIRGRAD = ["h", "v"]
+
 # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
 DIRECT_OFFSETS = [((-1, 0), [(-1, 0), (-1, -1)], 1),
                   ((1, 0), [(0, 0), (0, -1)], 1),
@@ -81,6 +85,42 @@ class QuoridorState:
 
         # initialize the pathfinder used to check valid wall placement
         self.pathfinder = PathFinder(self.grid_size)
+
+    def to_string(self,
+                  invariance=False,
+                  add_nb_walls=False,
+                  add_current_player=False):
+        # invariance specifies whether we make it invariant to the current player or not
+        # add_nb_walls specifies whether we add the number of remaining walls for each player at the end of the string
+        state_str = ""
+        if invariance and self.current_player == 1:
+            invariant_pos = [
+                self.player_positions[1], self.player_positions[0]
+            ]
+            invariant_nb_walls = [self.nb_walls[1], self.nb_walls[0]]
+            invariant_walls = np.rot90(self.walls, 2 * self.current_player)
+        else:
+            invariant_pos = self.player_positions
+            invariant_nb_walls = self.nb_walls
+            invariant_walls = self.walls
+
+        for pos in invariant_pos:
+            state_str += XGRAD[pos[0]] + YGRAD[pos[1]] + ";"
+        for i in range(self.grid_size - 1):
+            for j in range(self.grid_size - 1):
+                if invariant_walls[i, j] >= 0:
+                    state_str += XGRAD[i] + YGRAD[j] + DIRGRAD[invariant_walls[
+                        i, j]] + ";"
+
+        if add_nb_walls:
+            state_str += "p0:" + str(
+                invariant_nb_walls[0]) + ";" + "p1:" + str(
+                    invariant_nb_walls[1]) + ";"
+
+        if add_current_player:
+            state_str += "p0" + ";"
+
+        return state_str
 
     def get_opponent(self, player_idx: int) -> int:
         """Returns the opponent of the provided player

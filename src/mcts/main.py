@@ -23,19 +23,20 @@ def main():
     rendering = True
     print('rendering')
     i = 0
-    while not environment.done:
+    while i < 100 and not environment.done:
         print("Round " + str(i))
         i += 1
+        print(environment.state.to_string(False, True, True))
         # act
-        print('acting')
+        # print('acting')
         root = MCTSNode(environment.state, environment.current_player)
         action = root.best_action()
-        print('acting... type ' + str(action.type))
+        # print('acting... type ' + str(action.type))
         environment.act(action)
-        print("Position of PLAYER 0: " +
-              str(environment.state.player_positions[0]))
-        print("Position of PLAYER 1: " +
-              str(environment.state.player_positions[1]))
+        # print("Position of PLAYER 0: " +
+        #       str(environment.state.player_positions[0]))
+        # print("Position of PLAYER 1: " +
+        #       str(environment.state.player_positions[1]))
     print('GAME OVER')
 
 

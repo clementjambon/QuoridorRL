@@ -70,7 +70,8 @@ class MCTSNode():
             #       str(current_rollout_state.player_positions[player]))
             possible_actions = current_rollout_state.get_possible_actions(
                 player)
-            action = self.rollout_policy(possible_actions)
+            action = self.rollout_policy(possible_actions,
+                                         current_rollout_state)
             current_rollout_state = current_rollout_state.act(action, player)
             # print("final position" +
             #       str(current_rollout_state.player_positions[player]))
@@ -117,7 +118,7 @@ class MCTSNode():
         ]
         return self.children[np.argmax(probas)]
 
-    def rollout_policy(self, possible_actions):
+    def rollout_policy(self, possible_actions, state):
         """
         Default policy
         """
@@ -132,6 +133,9 @@ class MCTSNode():
         #             # print(self.state.x_targets[action.player_idx] -
         #             #       self.state.player_positions[action.player_idx][0])
         #             return action
+        if len(possible_actions) == 0:
+            print("no possible action")
+            print(state.to_string(False, True, True))
         return possible_actions[np.random.randint(len(possible_actions))]
 
     def _tree_policy(self):
@@ -148,7 +152,7 @@ class MCTSNode():
 
     def best_action(self):
         # print('looking for best action')
-        for i in trange(10):
+        for i in range(10):
             node = self._tree_policy()
             # print(self.children)
             # print('tree policy done')
