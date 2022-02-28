@@ -43,6 +43,8 @@
 - => heuristics, MC-RAVE (Rapid Action Value Estimation), AlphaZero (self-play+evaluation network to guide the expansion of the MCTS)
 - Our model still training due to the large complexity, and trouble tuning the hyperparameters, especially for alphazero
 
+Add qualification regarding conventional algorithms = DQN, PPO
+
 
 In addition to this paper, we provide the sources of our code at  \footnote{Source: \url{}}. 
 
@@ -54,8 +56,8 @@ In the following, we first review prior approaches to provide robust and human-l
 \subsection{Game and complexity}
 \label{ssec:complexity}
 Describe the state and branching complexity of the game.
-https://math.stackexchange.com/questions/953750/counting-all-possible-board-positions-in-quoridor
-https://project.dke.maastrichtuniversity.nl/games/files/bsc/Mertens_BSc-paper.pdf
+% https://math.stackexchange.com/questions/953750/counting-all-possible-board-positions-in-quoridor
+% https://project.dke.maastrichtuniversity.nl/games/files/bsc/Mertens_BSc-paper.pdf
 
 \subsection{MCTS}
 \label{ssec:mcts}
@@ -68,10 +70,12 @@ For a review of MCTS methods, refer to \cite{mcts-review}.
 
 As seen in paragraph \ref{ssec:complexity}, \textit{Quoridor} is a game with very high state and branching complexities. Consequently, given the existing computational resources and considering that a decision must be provided by our agent in a moderately realistic amount of time, we cannot perform an exhaustive tree search such as MinMax. Therefore, we turned to an \textit{AlphaGo} approach as presented in \cite{alphago}.
 
-In order to perform Monte Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we turned to the \textit{"self-play"} approach initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}.
+In order to perform Monte-Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we turned to the \textit{"self-play"} approach initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}.
 
 \section{Environment}
 \label{sec:environment}
+
+ \textit{Quoridor} being a little-known board game, there is, to our knowledge, no public implementation of its mechanics for the purpose of training RL agents. As a consequence, we provide with this project a turn-based environment with a \textit{gym}-like (cf. \cite{openai-gym})
 
 As an introduction = environment set up from scratch => coding the came logics + choose consistent state and action spaces representations (and/or) wrapper
 
@@ -82,22 +86,42 @@ In order to limit the computational burden due to the very large complexity of t
     \item the game can last at most $100$ turns, after which it is considered a "draw"
 \end{itemize}
 
-\subsection{Game logic}
-Although the game logic could be implemented by relying on a graph as suggested in (cf. Rebecca), we chose a different intrinsic representation.
-Game logic = coded from scratch. Although an easy, 
+\subsection{Logic and representation}
+Although the game logic could be implemented by relying on a graph as suggested in \cite{heuristic-agent}, we chose a different intrinsic representation to limit the memory and computational footprint which are critical for efficient \textit{Monte Carlo Tree Searches}. We coded the game logic from scratch and provide an interface that allows users to check whether an action is valid or not, fetch all valid actions, take actions based on abstract representation or the string representation mentioned below. In order to check valid actions, we use the well-known $A^*$ algorithm (see chapter 3 of \cite{russel2010} for more details) in order to perform pathfinding. Note that every time we test an action, a pathfinding is performed even though little changes on the board have occured from one state to the other ; we should thus consider in future works a more robust solutions leveraging previous computations.
 
-\subsection{State and action representations}
-The implemented logic of 
-Intrinsic representation = 
+Intrinsiquely, the state $s\in\mathcal{S}$ of the game is represented as the set of player positions on the board, the number of remaining walls for each player, the index of the current player and a 2D array storing walls located by their lower left-hand positions and where $-1, 0, 1$ stands respectively for empty, horizontal ($x$-aligned), vertical ($y$-aligned).
+
+States and actions can also be represented in a \textit{string} notation. Ours is inspired from the algebraic notation presented in \cite{quoridor-wikipedia}. More precisely, the $x$-coordinate of states are indexed in $\{1, \ldots, grid\_ size\}$ while the $y$-coordinate of states are indexed in $\{a, b, c, \ldots\}$. Walls are described in a similar fashion by appending the direction ($h$ for horizontal and $v$ for vertical) to the number-letter position couple. As such, we can represent player actions by the target \textit{string} position when the player performs a pawn move or the target wall position with the direction suffix when the player adds a wall. For completeness, we add the number of used walls to the state and the current player at the end of the \textit{string} representation. Equation \ref{eq:state-str} provides an example of such a representation and is illustrated in figure \ref{fig:state-str}.
+\begin{equation}
+    \label{eq:state-str}
+    % 1d;5c;1dv;2bh;3av;3bv;4dv;p0:2;p1:3;p0;
+    \underbrace{\text{1d;5c;}}_\text{pawn positions}\overbrace{\text{1dv;2bh;3av;3bv;4dv;}}^\text{walls}\underbrace{\text{p0:2;p1:3;}}_\text{used walls}\overbrace{\text{p0;}}^\text{current player}
+\end{equation}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{figures/state-str.png}
+    \caption{Board representation of the state given in equation \ref{eq:state-str}}
+    \label{fig:state-str}
+\end{figure}
 
 \subsection{User interface}
-In order to visualize and play games abstracted by the aforementioned logic, we provide a user interface with parameters that can be tuned according to the chosen configuration of the game. To this extent, we used the python \textit{SDL}-based library \textit{PyGame}\cite{pygame}.
+In order to visualize and play games abstracted by the aforementioned logic, we provide a user interface with parameters that can be tuned according to the chosen configuration of the game. To this extent, we used the python \textit{SDL}-based library \textit{PyGame}\cite{pygame}. Our relatively simple yet functional \textit{GUI} is shown in figure \ref{fig:gui}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{figures/gui.png}
+    \caption{Provided user interface}
+    \label{fig:gui}
+\end{figure}
 
 
 \section{Models}
 \label{sec:models}
 
 \subsection{AlphaZero agent}
+\label{ssec:alphazero}
+To alleviate the computational burden of tree search, \textit{AlphaZero}\cite{alphazero} proposes to perform Mont
+ and address the lack of human knowledge in the form of collected game data
+
 
 As mentioned in section \ref{sec:background}, \textit{Quoridor} is a typical example of a two-player zero-sum game with a very high complexity. As a consequence
 + choice of architecture (see appendix)
