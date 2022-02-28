@@ -37,10 +37,12 @@
 \section{Introduction}
 \label{sec:intro}
 
-Insist on the following challenges:
-- not much work before
-- no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied)
-- large state space, large branching spaces which bound exhaustive tree search methods to failure
+- What aspect? = Zero-sum two-player game = Quoridor
+- Why important? = Normally, use MinMax + heuristics but here, very large complexity, not much work before, 
+- What challenges? = no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied) => we cannot use supervised learning approaches (such as AlphaGo\cite{alphago}) / large state space, large branching spaces which bound exhaustive tree search methods to failure (e.g MinMax/AlphaBetaPruning)
+- => heuristics, MC-RAVE (Rapid Action Value Estimation), AlphaZero (self-play+evaluation network to guide the expansion of the MCTS)
+- Our model still training due to the large complexity, and trouble tuning the hyperparameters, especially for alphazero
+
 
 In addition to this paper, we provide the sources of our code at  \footnote{Source: \url{}}. 
 
@@ -49,12 +51,15 @@ In the following, we first review prior approaches to provide robust and human-l
 \section{Background and Related Work}
 \label{sec:background}
 
-\subsection{Complexity}
+\subsection{Game and complexity}
 \label{ssec:complexity}
 Describe the state and branching complexity of the game.
+https://math.stackexchange.com/questions/953750/counting-all-possible-board-positions-in-quoridor
+https://project.dke.maastrichtuniversity.nl/games/files/bsc/Mertens_BSc-paper.pdf
 
 \subsection{MCTS}
 \label{ssec:mcts}
+Use paper Erwan \cite{mc-rave}
 
 For a review of MCTS methods, refer to \cite{mcts-review}.
 
@@ -82,6 +87,7 @@ Although the game logic could be implemented by relying on a graph as suggested 
 Game logic = coded from scratch. Although an easy, 
 
 \subsection{State and action representations}
+The implemented logic of 
 Intrinsic representation = 
 
 \subsection{User interface}
