@@ -70,7 +70,7 @@ For a review of MCTS methods, refer to \cite{mcts-review}.
 
 As seen in paragraph \ref{ssec:complexity}, \textit{Quoridor} is a game with very high state and branching complexities. Consequently, given the existing computational resources and considering that a decision must be provided by our agent in a moderately realistic amount of time, we cannot perform an exhaustive tree search such as MinMax. Therefore, we turned to an \textit{AlphaGo} approach as presented in \cite{alphago}.
 
-In order to perform Monte-Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we turned to the \textit{"self-play"} approach initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}.
+In order to perform Monte-Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we turned to the \textit{"self-play"} approach initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}. Furthermore, unlike \textit{AlphaGo}, \textit{AlphaZero} does not require handcrafted features and is thus more suited to the problem of solving a new game from scratch, as its neural network learns itself to capture features through residual convolutions of the game board. 
 
 \section{Environment}
 \label{sec:environment}
@@ -119,12 +119,23 @@ In order to visualize and play games abstracted by the aforementioned logic, we 
 
 \subsection{AlphaZero agent}
 \label{ssec:alphazero}
-To alleviate the computational burden of tree search, \textit{AlphaZero}\cite{alphazero} proposes to perform Mont
- and address the lack of human knowledge in the form of collected game data
+    To alleviate the computational burden of tree search, \textit{AlphaZero}\cite{alphazero} proposes to perform MCTS where nodes are expanded thanks to the evaluation of a single policy-value network $f_\theta(s)=(\mathbf{p}, v)$ that takes as input a state $s\in \mathcal{S}$ and provides an action policy $\mathbf{p}\in\mathcal{P}(\mathcal{A})$ (see appendix \ref{sec:alphazero-network}). Similarly to conventional MCTS, each node represents a state and a edge stands for a state-action pair whose attributes are $N(s,a)$ its number of visit, $W(s,a)$ the accumulated action value, $Q(s,a)$ the average action value and $P(s,a)$ the prior probability of this pair. With this setup, we follow iteratively three consecutive steps:
+    \begin{enumerate}
+        % \item \textbf{Search:} we start from an uninitialized tree whose single root node is the current state $s_0$ of the simulation. For every simulation, as long as a leaf as not been reached, the tree is explored by choosing actions according \textit{UCT} (Upper Confidence bounds) algorithm that treats the tree as a multi-armed bandit problem and maximizes an upper confidence bound on the value of actions : $$a_t=\argmax_{a\in\mathcal{A}}(Q(s_t, a)+c_{uct}P(s_t,a)\frac{\sqrt{\sum_{b\in\mathcal{A}N(s, b)}}}{1+N(s,a)}}})$$ where $c_{uct}$ enables tuning between greedy exploitation and exploration of the tree.
+        \item \textbf{Expansion:} everytime a leaf is encountered, it is expanded by adding edges following the estimation provided by the neural network $f_\theta(s_L)=(\mathbf{p_L}, v_l)$ i.e each edge is initialized with $N(s_L, a)=W(s_L,a)=Q(s_L,a)=0$ and $P(s_L,.)=\mathbf{p_L}$.
+        \item \textbf{Backup:} the action values and visits of each rollout are back-propagated following $N(s_t, a_t) = N(s_t, a_t) + 1$, $W(s_t, a_t) = W(s_t, a_t) + v$ and $Q(s_t, a_t)=\frac{W(s_t, a_t)}{N(s_t, a_t)}$
+    \end{enumerate}
 
 
-As mentioned in section \ref{sec:background}, \textit{Quoridor} is a typical example of a two-player zero-sum game with a very high complexity. As a consequence
-+ choice of architecture (see appendix)
+    Unlike \textit{AlphaGo}\cite{alphago} whose expansion was guided by a network trained on real human-generated data. We adapted \textit{AlphaZero} self-play schemes to generate training samples without human knowledge. More precisely, on a global scale the training strategy is articulated as follows, we first randomly initialize the evaluation network $f_{\theta_0}$ with random weights $\theta_0$ and then proceed iteratively:
+    \begin{enumerate}
+        \item the last trained network $f_{\theta_i}$ is used to generate self-play games where each move is chosen according to a MCTS as described above. More precisely, actions are chosen following the search policy given by the accumulated visit counts of the root edges tempered with a temperature parameter $\tau$ i.e. $\mathbf{\pi}(.|s_0)=\frac{N(s_0,.)^\frac{1}{\tau}}{\sum_{b\in\mathcal{A}}}$
+    \end{enumerate} 
+
+    Parameters used are shown in table \ref{tab:alphazero-params}
+
+    State representation 
+
 
 In evaluation mode, a time parameter can be given and limit the MCTS (i.e. tree searches will be performed as long as the agent can do it)
 
@@ -140,6 +151,6 @@ In evaluation mode, a time parameter can be given and limit the MCTS (i.e. tree 
 \bibliography{biblio}
 
 \newpage
-\section*{Appendix}
-This is the place to put work that you did but is not essential to understand the paper: additional results and tables, lengthy proofs and derivations, \ldots. Material here does not count towards page limit (but also it will be optional for the reviewer/teacher to work through). 
+\section*{AlphaZero network configure}
+\label{sec:alphazero-network}
 \end{document}
