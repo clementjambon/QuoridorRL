@@ -3,7 +3,7 @@ class QuoridorAction:
     """
 
     def __init__(self) -> None:
-        pass
+        self.type = None
 
     def to_string(self) -> str:
         pass
@@ -12,6 +12,9 @@ class QuoridorAction:
         pass
 
     def to_index(self, grid_size: int) -> int:
+        pass
+
+    def __eq__(self, other) -> bool:
         pass
 
 
@@ -32,6 +35,7 @@ class MoveAction(QuoridorAction):
         super().__init__()
         self.player_pos = player_pos
         self.player_idx = player_idx
+        self.type = 0
 
     def to_string(self) -> str:
         return XGRAD[self.player_pos[0]] + YGRAD[self.player_pos[1]]
@@ -47,6 +51,11 @@ class MoveAction(QuoridorAction):
                                grid_size - 1 - self.player_pos[1])
             return self
 
+    def __eq__(self, other) -> bool:
+        return self.type == other.type and self.player_idx == other.player_idx and self.player_pos[
+            0] == other.player_pos[0] and self.player_pos[
+                1] == other.player_pos[1]
+
 
 class WallAction(QuoridorAction):
     """Action for wall placement
@@ -56,6 +65,7 @@ class WallAction(QuoridorAction):
         super().__init__()
         self.wall_position = wall_position
         self.wall_direction = wall_direction
+        self.type = 1
 
     def to_string(self) -> str:
         return XGRAD[self.wall_position[0]] + YGRAD[
@@ -73,3 +83,8 @@ class WallAction(QuoridorAction):
             self.wall_position = (grid_size - 2 - self.wall_position[0],
                                   grid_size - 2 - self.wall_position[1])
             return self
+
+    def __eq__(self, other) -> bool:
+        return self.type == other.type and self.wall_direction == other.wall_direction and self.wall_position[
+            0] == other.wall_position[0] and self.wall_position[
+                1] == other.wall_position[1]
