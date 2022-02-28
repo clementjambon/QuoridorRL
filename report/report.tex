@@ -6,6 +6,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}    
 \usepackage{booktabs} % Essential for nice tabs (see https://people.inf.ethz.ch/markusp/teaching/guides/guide-tables.pdf)
+\usepackage{xcolor} 
 
 \usepackage{bm}
 \newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
@@ -41,13 +42,15 @@ Quoridor is a zero-sum two-player board game which has not been extensively stud
 \section{Introduction}
 \label{sec:intro}
 
-- What aspect? = Zero-sum two-player game = Quoridor
+In this project game theory, and in particular Zero-sum two-player game (RL) approaches, are considered through the concrete example of Quoridor, a complex strategy game designed by Mirko Marchesi and published by Gigamic Games \cite{quoridor-gigamic}. This is a particularly interesting use case as the game complexity is extremely large, 
+
+ \textcolor{blue}{
 - Why important? = Normally, use MinMax + heuristics but here, very large complexity, not much work before, 
 - What challenges? = no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied) => we cannot use supervised learning approaches (such as AlphaGo\cite{alphago}) / large state space, large branching spaces which bound exhaustive tree search methods to failure (e.g MinMax/AlphaBetaPruning)
 - => heuristics, MC-RAVE (Rapid Action Value Estimation), AlphaZero (self-play+evaluation network to guide the expansion of the MCTS)
 - Our model still training due to the large complexity, and trouble tuning the hyperparameters, especially for alphazero
+Add qualification regarding conventional algorithms = DQN, PPO}
 
-Add qualification regarding conventional algorithms = DQN, PPO
 
 
 In addition to this paper, we provide the sources of our code at \footnote{Source: \url{}} and instructions to run each pipeline in the attached \textit{README} file. 
