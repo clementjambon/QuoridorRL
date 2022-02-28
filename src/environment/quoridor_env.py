@@ -101,34 +101,56 @@ class QuoridorEnvAgents(QuoridorEnv):
             current_agent = self.state.agent1
         #get the board as a Graph object for easier path search
         board_graph = BoardGraph(self.state.walls)
-
         #test
-        #board_graph.move_to_next_col_feature(current_agent.get_position(),
-        #                                     current_agent.get_targets()[0])
-
+        #self.add_wall_graph((7, 7), 1, board_graph)
+        #self.add_wall_graph((2, 2), 1, board_graph)
+        #self.add_wall_graph((0, 3), 0, board_graph)
+        #print(self.state.walls.T)
+        #board_graph.print_adj_graph()
+        #if not ok:
+        #self.helper_test(70, board_graph)
+        #    ok = self.add_wall_graph((0, 2), 0, board_graph)
+        board_graph.move_to_next_col_feature(current_agent.get_position(),
+                                             current_agent.get_targets()[0])
         #choose action this method depends on the type of Agents used
         action = current_agent.choose_action(
-            self.state.get_possible_actions(self.current_player))
+            self.state.get_possible_actions(self.current_player), board_graph)
 
         #execute chosen action
+
         if isinstance(action, MoveAction):
             self.move_pawn(action.get_pos())
         else:
             self.add_wall_graph(action.get_pos(), action.get_dir(),
                                 board_graph)
 
-        # Update current player
-        self.current_player = (self.current_player + 1) % NB_PLAYERS
+        # Update current player is already done when action is executed
 
     def add_wall_graph(self, target_position, direction: int,
                        board_graph: BoardGraph) -> bool:
-        super().add_wall(target_position, direction)
-        node_pos = coords_to_tile(target_position, self.state.grid_size)
-        if direction == 0:  #horizontal wall
-            board_graph.remove_edge(node_pos, node_pos + 1)
-            board_graph.remove_edge(node_pos + self.grid_size,
-                                    node_pos + self.grid_size + 1)
-        else:  #vertical wall
-            board_graph.remove_edge(node_pos, node_pos + self.grid_size)
-            board_graph.remove_edge(node_pos + 1,
-                                    node_pos + 1 + self.grid_size)
+        action_ok = super().add_wall(target_position, direction)
+        if action_ok:
+            node_pos = coords_to_tile(target_position, self.state.grid_size)
+            if direction == 0:  #horizontal wall
+                board_graph.remove_edge(node_pos, node_pos + 1)
+                board_graph.remove_edge(node_pos + self.grid_size,
+                                        node_pos + self.grid_size + 1)
+            else:  #vertical wall
+                board_graph.remove_edge(node_pos, node_pos + self.grid_size)
+                board_graph.remove_edge(node_pos + 1,
+                                        node_pos + 1 + self.grid_size)
+            return True
+        return False
+
+    def helper_test(self, node_pos, board_graph):
+        #Test
+        nodes = [
+            node_pos, node_pos + 1, node_pos + self.grid_size,
+            node_pos + self.grid_size + 1
+        ]
+        for i in nodes:
+            print("Vertex " + str(i) + ":", end="")
+            adjlist = board_graph.get_adj_list(i)
+            for node in adjlist:
+                print(" -> {}".format(node.to_string()), end="")
+            print(" \n")

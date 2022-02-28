@@ -16,6 +16,7 @@ from interactive import draw_gui, draw_board, draw_state
 
 
 #agent chooses next move at each mouse click
+#TODO make it play automatically without click
 def agent_plays_onclick(environment: QuoridorEnvAgents) -> None:
     # Prevents players from taking actions if the game is over
     if environment.done:

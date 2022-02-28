@@ -1,8 +1,10 @@
 import math
+import numpy as np
 from queue import PriorityQueue
 from collections import defaultdict
 import heapq as heap
 from utils import tile_to_coords
+from utils.coords import coords_to_tile
 
 
 class AdjNode:
@@ -38,31 +40,32 @@ class BoardGraph:
         self.grid_size = walls.shape[0] + 1
         self.v = self.grid_size * self.grid_size
         self.graph = [None] * self.v
+        #reshape walls to be 9x9
+        temp = np.full((self.grid_size, self.grid_size), -1)
+        temp[:-1, :-1] = walls
+        walls = temp
+        #get full graph
         for i in range(self.v):
-            if (i % self.grid_size != self.grid_size - 1):  #not last column
-                if (not self.is_there_wall(walls, i, i + 1)):
-                    self.add_edge(i, i + 1)
-            if (i % self.grid_size != 0):  #not first column
-                if (not self.is_there_wall(walls, i, i - 1)):
-                    self.add_edge(i, i - 1)
-            if (i >= self.grid_size):  #not first row
-                if (not self.is_there_wall(walls, i, i - self.grid_size)):
-                    self.add_edge(i, i - self.grid_size)
-            if (i < self.v - self.grid_size):  #not last row
-                if (not self.is_there_wall(walls, i, i + self.grid_size)):
-                    self.add_edge(i, i + self.grid_size)
-
-    def is_there_wall(self, walls, u: int, v: int) -> bool:
-        #walls is a 8x8 array bc last column and row can't have a wall (row because we place a wall "under the row")
-        if (u % self.grid_size >= self.grid_size - 1) or (
-                v % self.grid_size >= self.grid_size - 1
-        ) or (v >= self.v - self.grid_size) or (u >= self.v - self.grid_size):
-            return False
-        if (walls[math.floor(u / self.grid_size)][u % self.grid_size] !=
-                -1) or (walls[math.floor(
-                    v / self.grid_size)][v % self.grid_size] != -1):
-            return True
-        return False
+            coords = tile_to_coords(i, self.grid_size)
+            if coords[1] != self.grid_size - 1:  #not last row
+                self.add_edge(i, i + 1)
+            if coords[1] != 0:  #not first row
+                self.add_edge(i, i - 1)
+            if coords[0] != 0:  #not first col
+                self.add_edge(i, i - self.grid_size)
+            if coords[0] != self.grid_size - 1:  #not last col
+                self.add_edge(i, i + self.grid_size)
+        #remove if there are walls
+        for i in range(walls.shape[0]):
+            for j in range(walls.shape[0]):
+                tile = coords_to_tile((i, j), self.grid_size)
+                if walls[i][j] == 0:
+                    self.remove_edge(tile, tile + 1)
+                    self.remove_edge(tile + self.grid_size,
+                                     tile + self.grid_size + 1)
+                if walls[i][j] == 1:
+                    self.remove_edge(tile, tile + self.grid_size)
+                    self.remove_edge(tile + 1, tile + self.grid_size + 1)
 
     #last arg so that we add edge twice (undirected) if adding it after initialization t(hat does it automatically)
     def add_edge(self, s: int, d: int, initialization: bool = True):
@@ -74,18 +77,21 @@ class BoardGraph:
             node.next = self.graph[d]
             self.graph[d] = node
 
-    def remove_edge(self, s: int, d: int):
+    def remove_edge(self, s: int, d: int, other_dir: bool = False):
+        #print(f'edge {s} - {d}')
         current = self.graph[s]
         prev = current
         while current:
             if (current.vertex == d):
                 if (current.vertex == prev.vertex):  #head to remove
                     self.graph[s] = current.next
-                    self.remove_edge(d, s)  #remove other direction
+                    if not other_dir:
+                        self.remove_edge(d, s, True)  #remove other direction
                     break
                 else:
                     prev.next = current.next
-                    self.remove_edge(d, s)  #remove other direction
+                    if not other_dir:
+                        self.remove_edge(d, s, True)  #remove other direction
                     break
             prev = current
             current = current.next
@@ -165,16 +171,23 @@ class BoardGraph:
 
     def move_to_next_col_feature(self, agent_pos: int, a_target: int) -> int:
         """
+        2 features can be derived : 
+        • MINIMIZE nb of moves to next for current player (attacking move)
+        • MAXIMIZE nb of moves for adversary player (defensive)
         each player will try to place fences in such a way that his opponent has to
         take as many steps as possible to get to his goal. To achieve this, 
         the fences have to be placed so that the opponent has to move up and down the board.
         This feature calculates the minimum number of steps that have to be taken to reach the next column
+        A small amount of steps has to give a higher evaluation. 
+        So the number of steps, of the Max player to the next column, 
+        is raised by the power of −1.
+
         """
         parentsMap, nodeCosts = self.dijkstra(agent_pos)
-        #print(nodeCosts)
-        if a_target != 0:
+
+        if a_target != 0:  #agent0
             next_col = tile_to_coords(agent_pos, self.grid_size)[0] + 1
-        else:
+        else:  #agent1
             next_col = tile_to_coords(agent_pos, self.grid_size)[0] - 1
         #get the tiles nb of the column
         vertices_next_col = []
@@ -183,7 +196,6 @@ class BoardGraph:
         #find cost  of closest tile in next col
         cost = float('inf')
         for target in vertices_next_col:
-            #print(f'target : {target} cost : {nodeCosts[target]}')
             if nodeCosts[target] < cost:
                 cost = nodeCosts[target]
-        return cost
+        return pow(cost, -1)
