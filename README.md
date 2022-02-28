@@ -1,6 +1,8 @@
 # QuoridorRL
 *an INF581 project by Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon*
 
+This repository provides an environment for the two-player zero-sum Quoridor game and several implementations of agents targeting human-level control (namely [Heuristic agent](#heuristic-agent), [MC-RAVE agent](#mc-rave-agent) and [AlphaZero agent](#alphazero-agent)).
+
 ## Table of contents
 * [Getting started](#getting-started)
 * [Environment](#environment)
