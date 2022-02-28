@@ -5,6 +5,10 @@
 \usepackage{url}        
 \usepackage{amssymb}
 \usepackage{amsmath}    
+\usepackage{booktabs} % Essential for nice tabs (see https://people.inf.ethz.ch/markusp/teaching/guides/guide-tables.pdf)
+
+\usepackage{bm}
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
 
 % Some useful/example abbreviations for writing math
 \newcommand{\argmax}{\operatornamewithlimits{argmax}}
@@ -131,18 +135,53 @@ In order to visualize and play games abstracted by the aforementioned logic, we 
 
     Unlike \textit{AlphaGo}\cite{alphago} whose expansion was guided by a network trained by supervision on real human-generated data, \textit{AlphaZero} uses self-play schemes to generate training samples without human knowledge which makes it particularly interesting in the context of \textit{Quoridor} for which we have no collected data. We adapted these schemes to our \textit{Quoridor} environment as follows. We first randomly initialize the evaluation network $f_{\theta_0}$ with random weights $\theta_0$ and then proceed iteratively:
     \begin{enumerate}
-        \item the last trained network $f_{\theta_i}$ is used to generate self-play games where each move is chosen according to a \textit{MCTS} as described above. More precisely, actions are chosen following the search policy given by the visit counts of the root edges accumulated during the search and tempered with a temperature parameter $\tau$ i.e. $\mathbf{\pi}(.|s_0)=\frac{N(s_0,.)^\frac{1}{\tau}}{\sum_{b\in\mathcal{A}}N(s_0, b)^\frac{1}{\tau}}$ and we record state-action-outcome tuples $(s_t, \mathbf{\pi}_t, z)$ where $z$ is $1, -1, 0$ respectively for a victory, a defeat or a draw.
-        \item the network is $f_{\theta_{i+1}}$ is initialized with the weights of $f_{\theta_i}$ and trained with batches of self-play records sampled by previous models i.e $f_{\theta_i}, f_{\theta_{i-1}}, \ldots$
+        \item the last trained network $f_{\theta_i}$ is used to generate self-play games where each move is chosen according to a \textit{MCTS} as described above. More precisely, actions are chosen following the search policy given by the visit counts of the root edges accumulated during the search and tempered with a temperature parameter $\tau$ i.e. $\boldsymbol{\pi}(.|s_0)=\frac{N(s_0,.)^\frac{1}{\tau}}{\sum_{b\in\mathcal{A}}N(s_0, b)^\frac{1}{\tau}}$ and we record state-action-outcome tuples $(s_t, \boldsymbol{\pi}_t, z)$ where $z$ is $1, -1, 0$ respectively for a victory, a defeat or a draw.
+        \item the network is $f_{\theta_{i+1}}$ is initialized with the weights of $f_{\theta_i}$ and trained with batches of self-play records sampled by previous models i.e $f_{\theta_i}, f_{\theta_{i-1}}, \ldots$. The idea of the training is to make the network match the \textit{MCTS} search policy $\boldsymbol{\pi}$ and real outcome of the episode $v$ (not the one estimated at the time of the search!). To do so, we use an MSE loss on the value, a cross-entropy loss on the estimated policy and add $L2$ regularization:
+        \begin{equation}
+            L(\theta) = \underbrace{(z-v)²}_\text{MSE}+\underbrace{\boldsymbol{\pi}^T\log\mathbf{p}}_\text{cross-entropy}+\underbrace{c_{reg}\lVert\theta\rVert_2}_{L2\text{ reg}}
+        \end{equation}
     \end{enumerate} 
 
-    Parameters used for the above-mentioned optimization cycle are shown in table \ref{tab:alphazero-params}. The architecture of the estimation network is given in appendix \ref{sec:alphazero-network} and is directly inspired from the work of \cite{alphazero}. More interestingly, it leverages the 2D geometric structure (and thus invariances) of the \textit{Quoridor} board through a 2D state representation. The previously described state space is indeed turned into a \textit{"plane"}-based representation with  
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{lll}
+            \toprule
+            & Parameter & Value \\
+            \midrule
+            \textbf{Game} & Size of the board & 5 \\
+            & Maximum number of walls per player & 5 \\
+            & Maximum number of turns & 100 \\
+            \midrule
+            \textbf{Self-play} & Number of games & $1000$ \\
+            & Number of \textit{MCTS} simulations & $200$ \\
+            & UCT constant $c_{uct}$ & $1.25$ \\
+            & Initial temperature & $1.0$ \\
+            & Number of tempered steps & $20$ \\
+            \midrule
+            \textbf{Training} & Learning rate & $1e$-$3$\\
+            & Epochs for each iteration & 100 \\
+            &Batch size & 32 \\
+            &$L2$ regularization parameter $c_{reg}$ & $1e$-$4$ \\
+            \midrule
+            \textbf{Model} & Number of filters & $128$\\
+            & Number of residual blocks & $15$ \\
+            \midrule
+            \textbf{Evaluation} & Evaluation time & $2$s \\
+            \bottomrule
+        \end{tabular}
+    \caption{Parameters used in our implementation of AlphaZero}
+    \label{tab:alphazero-params}
+    \end{table}
 
-     In order for the representation to be consistent and for the network to capture the dynamics at play, the
-
-    State representation 
-
-
-In evaluation mode, a time parameter can be given and limit the MCTS (i.e. tree searches will be performed as long as the agent can do it)
+    Parameters used for the above-mentioned optimization cycle are shown in table \ref{tab:alphazero-params}. The architecture of the estimation network is given in appendix \ref{sec:alphazero-network} and is directly inspired from the work of \cite{alphazero}. More interestingly, it leverages the 2D geometric structure (and thus invariances) of the \textit{Quoridor} board through a 2D state representation. The previously described state space $s_t$ is indeed turned into a \textit{"plane"}-based representation $F_t$ with the following $3$ feature planes:
+    \begin{itemize}
+        \item a one-hot encoding plane for the current player (i.e. $0$ everywhere and $1$ at the player plosition)
+        \item a one-hot encoding plane for the opponent player 
+        \item a plane for walls where $0, 1, 2$ respectively stand for empty, horizontal wall and vertical wall (all things considered, it could also be interesting to try two different feature planes for both horizontal and vertical walls). Note that the plane of walls is smaller than the board dimensions; we therefore pad it with $0$s.
+    \end{itemize}  
+    As the network needs some temporal knowledge of the state, previous state space feature planes $T-1$ are concatenated and a constant feature plane $C_t$ specifying which player is playing (i.e. $0$ for player 0, $1$ for player 1) to provide overall $3\times T + 1$ feature planes: $(F_{t-T+1}, \ldots, F_{t-1}, F_t, C_t)$. In order for the representation to be consistent and for the network to capture the dynamics at play, the concatenated feature planes are then rotated (180°) to match the perspective of the current player. Finally, actions are mapped to indices which means that the features abstracted by the convolutional layers are flattened to obtain the policy vector $\mathbf{p}$ (see appendix \ref{sec:alphazero-network}) for more details.
+    
+    In evaluation mode, a time parameter can be given and limit the model to human-like evaluation conditions (i.e. tree searches will be performed as long as the agent can do it).
 
 
 \section{Results and Discussion}
@@ -158,11 +197,39 @@ Future works:
 - Use importance sampling on episode records as suggested in Mu-zero paper
 - Equivariant action space
 - Add constraint to deter the agents from placing walls initially (as of now, they are equally weighted and this is very unstable during training = agents tend to place all their walls at the beginning thus making no use of them)
+- use dilated convolutions? (capture on a more global scale)
 
 \bibliographystyle{plain}
 \bibliography{biblio}
 
 \newpage
-\section*{AlphaZero network configure}
+\section*{AlphaZero network configuration}
 \label{sec:alphazero-network}
+Even though our \textit{AlphaZero}-like network is close to the one initially proposed in \cite{alphagozero}, we chose smaller parameters due to the reduced size of our game space (see table \ref{tab:alphazero-params} for more details). Our implementation uses \textit{PyTorch}\cite{pytorch} and consists in:
+\begin{itemize}
+    \item a first convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation layer
+    \item a stack of residual blocks made of:
+    \begin{itemize}
+        \item a convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation
+        \item a convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + \textbf{a residual connection} + ReLU activation
+    \end{itemize}
+    \item two output heads:
+    \begin{enumerate}
+        \item a \textbf{policy head} made of:
+            \begin{itemize}
+                \item a convolution of $2$ filters of kernel size $1$ with stride $1$ + 2D batch normalization + ReLU activation
+                \item a flattener
+                \item a dense layer + softmax output layer
+            \end{itemize}
+        \item a \textbf{value head} made of:
+            \begin{itemize}
+                \item a convolution of $1$ filter of kernel size $1$ with stride $1$ + 2D batch normalization + ReLU activation layer
+                \item a flattener
+                \item a dense layer of size $256$ + ReLU activation
+                \item a dense layer to output size $1$ + $\tanh$ activation which restricts the output value in $[-1,1]$
+            \end{itemize}
+    \end{enumerate}
+\end{itemize}
+Note that each convolution is padded with 0 in order to give the same output size as the input.
+
 \end{document}
