@@ -8,11 +8,13 @@ from utils import get_offset
 class MCTSNode():
 
     def __init__(self,
+                 env,
                  state,
                  player_idx,
                  parent=None,
                  parent_action=None,
                  depth=0):
+        self.env = env
         self.state = state
         self.player_idx = player_idx
         self.parent = parent
@@ -31,8 +33,7 @@ class MCTSNode():
 
     def untried_actions(self):
         # print('looking for untried actions')
-        self._untried_actions = self.state.get_possible_actions(
-            self.player_idx)
+        self._untried_actions = self.env.get_possible_actions(self.state)
         return self._untried_actions
 
     def q(self):
@@ -48,9 +49,10 @@ class MCTSNode():
 
     def expand(self):
         action = self._untried_actions.pop()
-        next_state = self.state.act(action, self.player_idx)
-        child_node = MCTSNode(next_state,
-                              next_state.get_opponent(self.player_idx),
+        next_state = self.env.act(self.state, action)
+        child_node = MCTSNode(self.env,
+                              next_state,
+                              self.env.get_opponent(self.player_idx),
                               parent=self,
                               parent_action=action,
                               depth=self.depth + 1)
@@ -59,28 +61,30 @@ class MCTSNode():
         return child_node
 
     def is_leaf(self):
-        return self.state.is_game_over()
+        return self.env.is_game_over(self.state)
 
     def rollout(self):
         current_rollout_state = self.state
         player = self.player_idx
         actions = []
-        while not current_rollout_state.is_game_over():
+        while not (current_rollout_state.done
+                   or self.env.is_game_over(current_rollout_state)):
             # print("initial position" +
             #       str(current_rollout_state.player_positions[player]))
-            possible_actions = current_rollout_state.get_possible_actions(
-                player)
+            possible_actions = self.env.get_possible_actions(
+                current_rollout_state)
             action = self.rollout_policy(possible_actions,
                                          current_rollout_state)
-            current_rollout_state = current_rollout_state.act(action, player)
+            current_rollout_state = self.env.actNoCopy(current_rollout_state,
+                                                       action)
             # print("final position" +
             #       str(current_rollout_state.player_positions[player]))
             # print(current_rollout_state.x_targets[player] -
             #       current_rollout_state.player_positions[player][0])
-            player = self.state.get_opponent(player)
+            player = self.env.get_opponent(player)
             actions.append(action)
         # print("GAME OVER!")
-        if current_rollout_state.player_win(self.player_idx):
+        if self.env.player_win(current_rollout_state, self.player_idx):
             return 1, actions
         return -1, actions
 

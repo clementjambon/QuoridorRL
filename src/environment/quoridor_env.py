@@ -1,4 +1,6 @@
+from hashlib import new
 import numpy as np
+from copy import deepcopy
 from environment import QuoridorState, MoveAction, QuoridorAction, WallAction, QuoridorConfig
 
 from utils import add_offset, is_in_bound
@@ -374,7 +376,24 @@ class QuoridorEnv:
         # Return the full list of actions
         return possible_actions
 
-    def act(self, action):
+    def act(self, state, action):
+        """If permitted, execute action
+        
+        Args:
+            action (QuoridorAction): action to execute
+            
+        Returns:
+            QuoridorState: resulting state
+        """
+        new_state = deepcopy(state)
+        if action.type == 0:
+            self.move_pawn(new_state, action.player_pos)
+        else:
+            self.add_wall(new_state, action.wall_position,
+                          action.wall_direction)
+        return new_state
+
+    def actNoCopy(self, state, action):
         """If permitted, execute action
         
         Args:
@@ -384,16 +403,15 @@ class QuoridorEnv:
             QuoridorState: resulting state
         """
         if action.type == 0:
-            self.move_pawn(action.player_pos)
+            self.move_pawn(state, action.player_pos)
         else:
-            self.add_wall(action.wall_position, action.wall_direction)
-        return self.state
+            self.add_wall(state, action.wall_position, action.wall_direction)
+        return state
 
-
-    def is_game_over(self) -> bool:
+    def is_game_over(self, state) -> bool:
         """Checks whether a player has won or not
         
         Returns:
             bool: True is the game is over, False otherwise
         """
-        return self.state.is_game_over()
+        return self.player_win(state, 0) or self.player_win(state, 1)
