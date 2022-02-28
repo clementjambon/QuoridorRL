@@ -1,9 +1,10 @@
 from platform import node
 import numpy as np
 from environment.quoridor_action import MoveAction, WallAction, QuoridorAction
-from environment.quoridor_state import QuoridorState, QuoridorStateHeuristicsAgents, QuoridorStateRandomAgents
+from environment.quoridor_state import QuoridorState
 from environment.board_graph import BoardGraph
-from utils.coords import coords_to_tile, tile_to_coords
+from agents.agents import Agent, RandomAgent, HeuristicAgent
+from utils.coords import coords_to_tile
 
 # ----------------------------
 # ENVIRONMENT VARIABLES
@@ -90,67 +91,55 @@ class QuoridorEnvAgents(QuoridorEnv):
         super().__init__(grid_size, max_walls)
         # uncomment for a game between 2 agents taht only make random choices
         #self.state = QuoridorStateRandomAgents(self.grid_size, self.max_walls)
-        self.state = QuoridorStateHeuristicsAgents(self.grid_size,
-                                                   self.max_walls)
+        #self.state = QuoridorStateHeuristicsAgents(self.grid_size,
+        #                                           self.max_walls)
+
+        self.agent0 = HeuristicAgent(0, self.state)
+        self.agent1 = HeuristicAgent(1, self.state)
 
     def play(self):
         #get current player as an Agent obj
         if self.current_player == 0:
-            current_agent = self.state.agent0
+            current_agent = self.agent0
+            adversary = self.agent1
         else:
-            current_agent = self.state.agent1
+            current_agent = self.agent1
+            adversary = self.agent0
         #get the board as a Graph object for easier path search
         board_graph = BoardGraph(self.state.walls)
-        #test
-        #self.add_wall_graph((7, 7), 1, board_graph)
-        #self.add_wall_graph((2, 2), 1, board_graph)
-        #self.add_wall_graph((0, 3), 0, board_graph)
-        #print(self.state.walls.T)
-        #board_graph.print_adj_graph()
-        #if not ok:
-        #self.helper_test(70, board_graph)
-        #    ok = self.add_wall_graph((0, 2), 0, board_graph)
-        board_graph.move_to_next_col_feature(current_agent.get_position(),
-                                             current_agent.get_targets()[0])
+
         #choose action this method depends on the type of Agents used
-        action = current_agent.choose_action(
-            self.state.get_possible_actions(self.current_player), board_graph)
+        action = current_agent.choose_action(adversary, board_graph)
 
         #execute chosen action
-
         if isinstance(action, MoveAction):
             self.move_pawn(action.get_pos())
         else:
-            self.add_wall_graph(action.get_pos(), action.get_dir(),
-                                board_graph)
+            action_ok = self.add_wall(action.get_pos(), action.get_dir())
+            board_graph.add_wall_graph(action.get_pos(), action.get_dir(),
+                                       action_ok)
 
         # Update current player is already done when action is executed
 
-    def add_wall_graph(self, target_position, direction: int,
-                       board_graph: BoardGraph) -> bool:
-        action_ok = super().add_wall(target_position, direction)
+    def move_pawn(self, target_position: tuple[int, int]) -> bool:
+        action_ok = super().move_pawn(target_position)
         if action_ok:
-            node_pos = coords_to_tile(target_position, self.state.grid_size)
-            if direction == 0:  #horizontal wall
-                board_graph.remove_edge(node_pos, node_pos + 1)
-                board_graph.remove_edge(node_pos + self.grid_size,
-                                        node_pos + self.grid_size + 1)
-            else:  #vertical wall
-                board_graph.remove_edge(node_pos, node_pos + self.grid_size)
-                board_graph.remove_edge(node_pos + 1,
-                                        node_pos + 1 + self.grid_size)
+            if (self.current_player == 1
+                ):  #we already updated current_player in super()
+                self.agent0.set_position(
+                    coords_to_tile(target_position, self.grid_size))
+            else:
+                self.agent1.set_position(
+                    coords_to_tile(target_position, self.grid_size))
             return True
         return False
 
-    def helper_test(self, node_pos, board_graph):
-        #Test
-        nodes = [
-            node_pos, node_pos + 1, node_pos + self.grid_size,
-            node_pos + self.grid_size + 1
-        ]
-        for i in nodes:
-            print("Vertex " + str(i) + ":", end="")
-            adjlist = board_graph.get_adj_list(i)
-            for node in adjlist:
-                print(" -> {}".format(node.to_string()), end="")
-            print(" \n")
+    def add_wall(self, target_position, direction: int) -> bool:
+        action_ok = super().add_wall(target_position, direction)
+        if action_ok:
+            if (self.current_player == 0):
+                self.agent0.nb_walls_placed += 1
+            else:
+                self.agent1.nb_walls_placed += 1
+            return True
+        return False

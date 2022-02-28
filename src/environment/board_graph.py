@@ -113,12 +113,10 @@ class BoardGraph:
         nodeCosts = defaultdict(lambda: float('inf'))
         nodeCosts[startingNode] = 0
         heap.heappush(pq, (0, startingNode))
-
         while pq:
             # go greedily by always extending the shorter cost nodes first
             _, node = heap.heappop(pq)
             visited.add(node)
-
             #for adjNode in G[node].items():
             for adjNode in self.get_adj_list(node):
                 adjNode = adjNode.vertex
@@ -151,51 +149,16 @@ class BoardGraph:
                 print(" -> {}".format(node.to_string()), end="")
             print(" \n")
 
-    def position_feature(self, agent_pos: int) -> int:
-        """
-        the simplest evaluation features is the number of columns that the pawn is away from his base line column
-        if the pawn is on his base line, the value is 0. If the pawn is on the goal line, the value is 8.
-        """
-        coords = tile_to_coords(agent_pos, self.grid_size)
-        return coords[0]  #rows and cols are strangely inversed
-
-    def position_difference(self, max_agent_pos: int,
-                            min_agent_pos: int) -> int:
-        """
-        This feature returns the difference between the position feature
-        of the Max player and the position feature of the Min player.
-        It actually indicates how good your progress is compared to the opponent’s progress.
-        """
-        return self.position_feature(max_agent_pos) - self.position_feature(
-            min_agent_pos)
-
-    def move_to_next_col_feature(self, agent_pos: int, a_target: int) -> int:
-        """
-        2 features can be derived : 
-        • MINIMIZE nb of moves to next for current player (attacking move)
-        • MAXIMIZE nb of moves for adversary player (defensive)
-        each player will try to place fences in such a way that his opponent has to
-        take as many steps as possible to get to his goal. To achieve this, 
-        the fences have to be placed so that the opponent has to move up and down the board.
-        This feature calculates the minimum number of steps that have to be taken to reach the next column
-        A small amount of steps has to give a higher evaluation. 
-        So the number of steps, of the Max player to the next column, 
-        is raised by the power of −1.
-
-        """
-        parentsMap, nodeCosts = self.dijkstra(agent_pos)
-
-        if a_target != 0:  #agent0
-            next_col = tile_to_coords(agent_pos, self.grid_size)[0] + 1
-        else:  #agent1
-            next_col = tile_to_coords(agent_pos, self.grid_size)[0] - 1
-        #get the tiles nb of the column
-        vertices_next_col = []
-        for i in range(self.grid_size):
-            vertices_next_col.append(next_col * self.grid_size + i)
-        #find cost  of closest tile in next col
-        cost = float('inf')
-        for target in vertices_next_col:
-            if nodeCosts[target] < cost:
-                cost = nodeCosts[target]
-        return pow(cost, -1)
+    def add_wall_graph(self, target_position, direction: int,
+                       action_ok: bool) -> bool:
+        if action_ok:
+            node_pos = coords_to_tile(target_position, self.grid_size)
+            if direction == 0:  #horizontal wall
+                self.remove_edge(node_pos, node_pos + 1)
+                self.remove_edge(node_pos + self.grid_size,
+                                 node_pos + self.grid_size + 1)
+            else:  #vertical wall
+                self.remove_edge(node_pos, node_pos + self.grid_size)
+                self.remove_edge(node_pos + 1, node_pos + 1 + self.grid_size)
+            return True
+        return False
