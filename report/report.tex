@@ -35,27 +35,18 @@
 
 % Write abstract here
 \begin{abstract}
-Quoridor is a zero-sum two-player board game which has not been extensively studied yet in the context of reinforcement learning. Its relatively large state and branching complexities and the lack of human-generated data make it very challenging and unsuitable for simple control strategies and exhaustive tree search approaches. Consequently, we provide a full \textit{gym}-like environment of the game and its mechanics. We then introduce three strategies with the aim of reaching human-level control: first a heuristic approach with \textit{MinMax} tree search relying on handcrafted evaluation functions, then a \textit{Monte-Carlo Tree Search} with \textit{Rapid Action Value Estimation} and finally a \textit{Monte-Carlo Tree Search} augmented with an evaluation neural network directly inspired from \textit{AlphaZero}. Even though, we have not reached convincing results yet, we are confident such approaches could yield satisfying performances with more computational resources.
+Quoridor is a zero-sum two-player board game which has not been extensively studied yet in the context of reinforcement learning. Its relatively large state and branching complexities and the lack of human-generated data make it very challenging and unsuitable for simple control strategies and exhaustive tree search approaches. Consequently, we provide a full \textit{gym}-like environment for the game and its mechanics. We then introduce three strategies with the aim of reaching human-level control: first a heuristic approach with \textit{MinMax} tree search relying on handcrafted evaluation functions, then a \textit{Monte-Carlo Tree Search} with \textit{Rapid Action Value Estimation} and finally a \textit{Monte-Carlo Tree Search} augmented with an evaluation neural network directly inspired from \textit{AlphaZero}. Even though, we have not reached convincing results yet, we are confident such approaches can yield satisfying performances with more computational resources.
 \end{abstract}
 
 % Each section begins with a \section{title} command
 \section{Introduction}
 \label{sec:intro}
 
-In this project game theory, and in particular Zero-sum two-player game (RL) approaches, are considered through the concrete example of Quoridor, a complex strategy game designed by Mirko Marchesi and published by Gigamic Games \cite{quoridor-gigamic}. This is a particularly interesting use case as the game complexity is extremely large, 
+In this project game theory, and in particular Zero-sum two-player game (RL) approaches, are considered through the concrete example of Quoridor, a complex strategy game designed by Mirko Marchesi and published by Gigamic Games \cite{quoridor-gigamic}. This is a particularly interesting use case as the game complexity is very large (large state and branching complexities), which makes tree search approaches (e.g. minimax, heuristics-based approaches) impractical for real-time applications. Moreover, finding or generating sufficient amounts of game-related expert data for use in supervised learning methods is a challenging task. The former point is a common challenge in popular games such as chess, Go or Shogi whereas the latter point is untrue for most of these popular games, most of which having been widely studied. For instance AlphaGo \cite{alphago}, whose successor AlphaZero \cite{alphazero} is the basis for one of the three strategies implemented, could not be repurposed for this game scenario for efficiency reasons. To implement our agents, more efficient search approaches are used such as Monte-Carlo Tree Search with Rapid Action Value Estimation (MCTS-RAVE) \cite{MCTS-RAVE} and AlphaZero \cite{alphazero}. In this paper, prior approaches to provide robust and human-level control agents are reviewed (section \ref{sec:background}), the implementation of the environment is discussed (section \ref{sec:environment}), methods used to solve the environment are detailed(section \ref{sec:models}), the experiments are described and a discussion of the results is presented (section \ref{sec:results}).
+ Although the environment and the agents are successfully implemented, due to the large complexity of the game some agent implementations such as AlphaZero require further training and refinements (e.g. minor structural changes, hyperparameter tuning). 
+Lastly, time permitting additional agent implementations the likes of SARSA, Q-Learning or DQN will be considered in the context of an overall comparative analysis. % should we keep this here? vs in Conclusions?
 
- \textcolor{blue}{
-- Why important? = Normally, use MinMax + heuristics but here, very large complexity, not much work before, 
-- What challenges? = no human knowledge/pre-existing game data (contrary to Go, Shogi or Chess which have already been widely studied) => we cannot use supervised learning approaches (such as AlphaGo\cite{alphago}) / large state space, large branching spaces which bound exhaustive tree search methods to failure (e.g MinMax/AlphaBetaPruning)
-- => heuristics, MC-RAVE (Rapid Action Value Estimation), AlphaZero (self-play+evaluation network to guide the expansion of the MCTS)
-- Our model still training due to the large complexity, and trouble tuning the hyperparameters, especially for alphazero
-Add qualification regarding conventional algorithms = DQN, PPO}
-
-
-
-In addition to this paper, we provide the sources of our code at \footnote{Source: \url{}} and instructions to run each pipeline in the attached \textit{README} file. 
-
-In the following, we first review prior approaches to provide robust and human-level control agents in two-player games with large complexities (section \ref{sec:background}), then we describe our implementation of the environment (section \ref{sec:environment}) and the models we used to solve it (section \ref{sec:models}), followed lastly by our experiments and resulting discussion (section \ref{sec:results}).
+In addition to this paper, we provide the sources of our code at \footnote{Source: \url{}} along with instructions to run each pipeline in the attached \textit{README} file. 
 
 \section{Background and Related Work}
 \label{sec:background}
