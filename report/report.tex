@@ -52,6 +52,11 @@ In the following, we first review prior approaches to provide robust and human-l
 \label{ssec:complexity}
 Describe the state and branching complexity of the game.
 
+\subsection{MCTS}
+\label{ssec:mcts}
+
+For a review of MCTS methods, refer to \cite{mcts-review}.
+
 \subsection{Training without human knowledge}
 \label{ssec:human-knowledge}
 
@@ -78,6 +83,8 @@ We used \textit{Pygame}.
 \subsection{AlphaZero agent}
 
 + choice of architecture (see appendix)
+
+In evaluation mode, a time parameter can be given and limit the MCTS (i.e. tree searches will be performed as long as the agent can do it)
 
 
 \section{Results and Discussion}
