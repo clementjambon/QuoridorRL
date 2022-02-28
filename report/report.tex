@@ -51,8 +51,6 @@ In this project game theory, and in particular Zero-sum two-player game (RL) app
 - Our model still training due to the large complexity, and trouble tuning the hyperparameters, especially for alphazero
 Add qualification regarding conventional algorithms = DQN, PPO}
 
-
-
 In addition to this paper, we provide the sources of our code at \footnote{Source: \url{}} and instructions to run each pipeline in the attached \textit{README} file. 
 
 In the following, we first review prior approaches to provide robust and human-level control agents in two-player games with large complexities (section \ref{sec:background}), then we describe our implementation of the environment (section \ref{sec:environment}) and the models we used to solve it (section \ref{sec:models}), followed lastly by our experiments and resulting discussion (section \ref{sec:results}).
@@ -62,6 +60,12 @@ In the following, we first review prior approaches to provide robust and human-l
 
 \subsection{Game and complexity}
 \label{ssec:complexity}
+
+Quoridor is a stochastic, perfect information, adversarial game that can be played with two to four players. For the purpose of this project and exploring reinforcement learning algorithms, however, only the two-player version of the game will be considered. The board game consists of a $n$ by $n$ square-tiled board, where $n$ is odd. 
+The two players start off with $n+1$ rectangular tiles and one game token each. Each player then places their respective token in the center of opposing outermost sides of the grid. Both players take turns doing one of two things: moving their token by one spot or placing a wall on the board in the spaces between the tiles, making sure the length of the wall is in contact with exactly two tiles on each side. 
+A token can be moved only horizontally or vertically and cannot skip over a wall. There are two exceptions to the regular taxi-cab moves wherein your token is right in front of the opponent's token and you'd like to advance in the direction of the opponent's piece. In the case where there is no wall behind the opponent's token you may skip over them. If there is a wall behind them, you can exceptionally move diagonally.
+The objective of the game is to advance your respective token from one end of the board to the other. Players can place the walls anywhere on the grid, but at least one viable path to the other side for each player must exist. 
+
 Describe the state and branching complexity of the game.
 % https://math.stackexchange.com/questions/953750/counting-all-possible-board-positions-in-quoridor
 % https://project.dke.maastrichtuniversity.nl/games/files/bsc/Mertens_BSc-paper.pdf
