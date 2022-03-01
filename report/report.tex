@@ -136,7 +136,7 @@ This section discusses the basic decision making methods developed for our agent
 In the former, if you cannot place anymore walls on the board proceed by moving in the shortest-path manner, which is calculated using the Djistra method. 
 In the latter, we decide what our next move will be using a MinMax tree.
 
-The MinMax search tree is a classical method for decision making in a zero-sum game. Every edge is an action or move in the game and every node stores the evaluation of a particular state of the game.
+The MinMax tree is a classical method for decision making in a zero-sum game. Every edge is an action or move in the game and every node stores the evaluation of a particular state of the game.
 Ideally, a full MinMax tree can be computed and then starting from the leaf nodes, you chose the node that maximizes or minimizes the reward depending on if it is your turn or not. As previously mentionned in \ref{ssec:complexity}, Quoridor has a very large game tree. For this reason, we chose to compute the MinMax tree only until a certain depth, and evaluate a game state given four different heuristics. This will result in two things: we will be able to successfully and efficiently perform a MinMax analysis, and we will be able to use the calculated state heuristics for not only MinMax but MCTS-RAVE as well.
 
 
@@ -244,7 +244,7 @@ Nonetheless, considering the implementation we proposed, we can discuss several 
 
 \section{Conclusions}
 \label{sec:conclusion}
-In this paper, Reinforcement Learning approaches are discussed in the context of the zero-sum two-player game of Quoridor. Various methods are considered but only a few suited to the constraints imposed by the properties of the game lead to the implementation of agents. A Monte-Carlo Tree Search approach is performed through the implementation of MC-RAVE, an AlphaZero-like agent is built and is currently being trained and a heuristics-based approach is evaluated leveraging Minimax and Shortest Path searches. Although the obtention of conclusive results is still pending, significant efforts have gone into the agents and the approaches are looking promising. In the remaining time we are planning to train all agents and perform a detailed comparative analysis as well as to improve our heuristics with the addition of refinements such as Alpha-Beta pruning.
+In this paper, Reinforcement Learning approaches are discussed in the context of the zero-sum two-player game of Quoridor. Various methods were considered but only few suited the constraints imposed by the properties and rules of Quoridor. A Monte-Carlo Tree Search approach is performed through the implementation of MC-RAVE, an AlphaZero-like agent has been implemented and is currently being trained, and a heuristics-based approach is evaluated leveraging Minimax and shortest path searches. Although the obtention of conclusive results is still pending, significant efforts have gone into the agents and the approaches look promising given their successes in the literature. In the remaining time we plan to train all agents and perform a detailed comparative analysis, as well as improve the efficienct of our decision making methods with the implementation of the Alpha-Beta pruning method. Time permitting we would also be very interested in implementing the SARSA method.
 
 \newpage
 \section{Appendix}\label{sec:appendix}
