@@ -114,7 +114,7 @@ def get_parser() -> ArgumentParser:
 
     training_group.add_argument('--learning_rate',
                                 type=float,
-                                default=1e-4,
+                                default=1e-3,
                                 help='learning rate used during training')
 
     # ----------------------------

@@ -195,6 +195,10 @@ class MCTS:
             # Otherwise, select and iterate
             action_idx = self.puct_action(environment, state, state_str)
 
+            # Drop the search if reaching action_idx=-1
+            if action_idx == -1:
+                return
+
             # Get next_state after taking action
             state = environment.step_from_index(
                 state,
