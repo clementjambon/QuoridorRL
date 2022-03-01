@@ -132,9 +132,9 @@ In order to visualize and play games abstracted by the aforementioned logic, we 
 
 \subsection{Decision Making, MinMax and Heuristics}\label{ssec:heuristics}
 
-This section discusses the basic decision making methods developed for our agent.There are two strategies the agent can take whose usages depend on two factors: the opponent has no more walls to place on the board, or they still do.
-In the former, if no more walls can be placed on the board by your opponent proceed by moving in the shortest-path manner which is calculated with the Djistra method. 
-In the latter, we base our next move using a MinMax tree.
+This section discusses the basic decision making methods developed for our agent.There are two strategies the agent can take whose usages depend on two factors: the first being if you have no more walls to place on the board, and the second being you still do.
+In the former, if you cannot place anymore walls on the board proceed by moving in the shortest-path manner, which is calculated using the Djistra method. 
+In the latter, we decide what our next move will be using a MinMax tree.
 
 The MinMax search tree is a classical method for decision making in a zero-sum game. Every edge is an action or move in the game and every node stores the evaluation of a particular state of the game.
 Ideally, a full MinMax tree can be computed and then starting from the leaf nodes, you chose the node that maximizes or minimizes the reward depending on if it is your turn or not. As previously mentionned in \ref{ssec:complexity}, Quoridor has a very large game tree. For this reason, we chose to compute the MinMax tree only until a certain depth, and evaluate a game state given four different heuristics. This will result in two things: we will be able to successfully and efficiently perform a MinMax analysis, and we will be able to use the calculated state heuristics for not only MinMax but MCTS-RAVE as well.
