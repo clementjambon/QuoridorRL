@@ -78,6 +78,13 @@ def get_parser() -> ArgumentParser:
         default=20,
         help="number of turns during which temperature is applied")
     selfplay_group.add_argument(
+        '--limited_time',
+        type=float,
+        default=None,
+        help=
+        "limited time in seconds during which a full MCTS can be performed (by default None)"
+    )
+    selfplay_group.add_argument(
         '--model_path',
         type=str,
         default=None,
