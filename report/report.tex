@@ -56,8 +56,7 @@ In addition to this paper, we provide the sources of our code\footnote{Source: \
 
 Quoridor is a stochastic, perfect information, adversarial game that can be played with two to four players. For the purpose of this project and exploring reinforcement learning methods, however, only the two-player version of the game will be considered. The board game consists of a $n$ by $n$ square-tiled board, where $n$ is odd. 
 The two players start off with $n+1$ rectangular tiles and one game pawn each. Each player then places their respective pawn in the center of opposing outermost sides of the grid. Both players take turns doing one of two things: moving their pawn by one spot or placing a wall on the board in the spaces between the tiles, making sure the length of the wall is in contact with exactly two tiles on each side. 
-A pawn can be moved only horizontally or vertically (\textit{taxi-cab}) and cannot skip over a wall. There are two exceptions to the regular taxi-cab moves wherein your pawn is right in front of the opponent's pawn and you'd like to advance in the direction of the opponent's piece. In the case where there is no wall behind the opponent's pawn, you may skip over them. If there is a wall behind them, you can exceptionally move diagonally.
-The objective of the game is to advance your respective pawn from one end of the board to the other. Players can place the walls anywhere on the grid, but at least one viable path to each side must exist for each player. 
+The objective of the game is to advance your respective pawn from one end of the board to the other. Players can place the walls anywhere on the grid, but at least one viable path to each side must exist for each player. Details on legal pawn moves can be found in \ref{quoridor-details}.
 
 As previously mentioned, Quoridor has very large state-space and game tree complexities. The following paragraph will be dedicated to calculating and/or estimating these values. 
 
@@ -65,7 +64,7 @@ The state-space of a game is defined as all the possible states of the game \cit
 This upper-bound is equal to the product of the total number of possible pawn positions, $S_{tok}$, and the total number of wall positions, $S_{wall}$.  There are at most $n^{2}$ positions that the first player's pawn can be placed at, and $n^{2} -1$ possible positions on the board for the second player to place their game piece. Therefore $S_{tok} = n^{2}(n^{2}-1) = n^{4} - n^{2}$.
 
 The number of possible wall positions can also be estimated using an upper-bound. In a single row, $n-1$ walls can be placed. Since there are $n-1$ rows, there are $(n-1)^{2}$ possible places to put walls on the rows of the grid. One must consider the possible positions of walls in the columns, which as it turns out is the exact same given the square nature of the grid. Therefore there are technically $2(n-1)^{2}$ possible places to put walls in Quoridor. 
-Placing a wall at any position on the grid, however, takes away at most four possible wall positions from the total possible spots previously calculated. Thus, for the $2(f+1)$ fences that can be placed on the board (since each player has $n+1$ rectangular tiles, there are at most $\sum_{i=0}^{2n} \prod_{j=0}^{i}(2(n-1)^2 - 4i)$ possible placements for the walls. This is clearly a loose upper-bound as it misses many other illegal positions of walls, but it does give an idea of the scale of the number of possible walls. Finally, the state space is equal to $2(n-1)^{2} * \sum_{i=0}^{2n} \prod_{j=0}^{i}(2(n-1)^2 - 4i)$, which can grow incredibly large as the size of the board increases.
+Placing a wall at any position on the grid, however, takes away at most four possible wall positions from the total possible spots previously calculated. Thus, for the $2(n+1)$ fences that can be placed on the board (since each player has $n+1$ rectangular tiles, there are at most $\sum_{i=0}^{2n} \prod_{j=0}^{i}(2(n-1)^2 - 4i)$ possible placements for the walls. This is clearly a loose upper-bound as it misses many other illegal positions of walls, but it does give an idea of the scale of the number of possible walls. Finally, the state space is equal to $2(n-1)^{2} * \sum_{i=0}^{2n} \prod_{j=0}^{i}(2(n-1)^2 - 4i)$, which can grow incredibly large as the size of the board increases.
 
 The size of a game tree is the number of possible games that can be played. This can be estimated by the value $b^{d}$ where $b$ is the average number of branches there are from a node in the game tree (i.e possible positions from a given state), and $d$ is the average number of turns that a game takes (i.e the average depth of the game tree). One can see that as the board gets larger, the number of possible moves from a state space grows due to the increasing number of possible positions for both token and walls, as does the number of turns a game may take since the token will have to make increasingly more steps to get to the other side. 
 Therefore, the size of the game tree grows exponentially. For a 9 by 9 board, for example, the size of the game-tree can be estimated as $60.4^{91.1} \approx 1.7884 * 10^{162}$ \cite{mastering-quoridor}, which makes exhaustive search impossible
@@ -238,10 +237,13 @@ Nonetheless, considering the implementation we proposed, we can discuss several 
 \section{Conclusions}
 \label{sec:conclusion}
 
-\bibliographystyle{plain}
-\bibliography{biblio}
-
 \newpage
+\section{Appendix}\label{sec:appendix}
+
+\section*{Additional Quoridor Rules}\label{sec:quoridor-details}
+A pawn can be moved only horizontally or vertically (\textit{taxi-cab}) and cannot skip over a wall. 
+There are two exceptions to the regular taxi-cab moves wherein your pawn is right in front of the opponent's pawn and you'd like to advance in the direction of the opponent's piece. In the case where there is no wall behind the opponent's pawn, you may skip over them. If there is a wall behind them, you can exceptionally move diagonally.
+
 \section*{AlphaZero network configuration}
 \label{sec:alphazero-network}
 Even though our \textit{AlphaZero}-like network is close to the one initially proposed in \cite{alphagozero}, we chose smaller parameters due to the reduced size of our game space (see table \ref{tab:alphazero-params} for more details). Our implementation uses \textit{PyTorch}\cite{pytorch} and consists in:
@@ -270,5 +272,8 @@ Even though our \textit{AlphaZero}-like network is close to the one initially pr
     \end{enumerate}
 \end{itemize}
 Note that each convolution is padded with 0 in order to give the same output size as the input.
+
+\bibliographystyle{plain}
+\bibliography{biblio}
 
 \end{document}
