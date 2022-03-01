@@ -1,8 +1,6 @@
 import os
 import pickle
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, as_completed
 import numpy as np
-from pygame import init
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
