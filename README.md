@@ -104,6 +104,9 @@ Self-play config:
                         for the number of --tempered_states)
   --tempered_steps TEMPERED_STEPS
                         number of turns during which temperature is applied
+  --limited_time LIMITED_TIME
+                        limited time in seconds during which a full MCTS can
+                        be performed (by default None)
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
@@ -190,6 +193,9 @@ Self-play config:
                         for the number of --tempered_states)
   --tempered_steps TEMPERED_STEPS
                         number of turns during which temperature is applied
+  --limited_time LIMITED_TIME
+                        limited time in seconds during which a full MCTS can
+                        be performed (by default None)
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
