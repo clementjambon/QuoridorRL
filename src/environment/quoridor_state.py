@@ -84,7 +84,7 @@ class QuoridorState:
                     invariant_nb_walls[1]) + ";"
 
         if add_current_player:
-            state_str += "p0" + ";"
+            state_str += "p" + str(self.current_player) + ";"
 
         return state_str
         # return str(np.rot90(self.walls, 2 * self.current_player)) + str(
