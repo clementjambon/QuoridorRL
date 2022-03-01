@@ -11,7 +11,8 @@ class QuoridorRepresentation:
     # - Wall (where 0 stands for nothing, 1 horizontal wall, 2 vertical wall) (2D padded with 0 on the last column)
     # Additional constant valued planes are
     # - Player colour (0 for P0, 1 for P1)
-    # - Number of available walls
+    # - Number of available walls to current player
+    # - Number of available walls to opponent player
 
     def __init__(self,
                  game_config: QuoridorConfig,
@@ -21,7 +22,7 @@ class QuoridorRepresentation:
         self.time_consistency = time_consistency
         # The number of channels is given by the description above
         self.nb_features = 3
-        self.nb_constants = 2
+        self.nb_constants = 3
         self.nb_channels = self.time_consistency * self.nb_features + self.nb_constants
 
     # Generates instantaneous planes (i.e without time consistency)
@@ -68,6 +69,11 @@ class QuoridorRepresentation:
             self.max_walls -
             current_state.nb_walls[current_state.current_player]) * torch.ones(
                 (self.grid_size, self.grid_size))
+        # - Opponent number of available walls
+        state_planes[self.time_consistency * self.nb_features +
+                     2] = (self.max_walls - current_state.nb_walls[
+                         (current_state.current_player + 1) % 2]) * torch.ones(
+                             (self.grid_size, self.grid_size))
 
         # Rotate (180°=2x90°) w.r.t. the current player
         # TODO: check rotation axes!
