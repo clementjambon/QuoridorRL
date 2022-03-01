@@ -51,7 +51,12 @@ python3 display_states.py [STATE_STRINGS_PATH]
 To transition from one state to another, press `space`
 
 ## Heuristic agent
-To be completed...
+Two AI agents can play against each other making choices based on a Minimax search. Go on the heuristic branch to try it. The mouse has to be clicked on the window to tell the agent to make a move. 
+/!\ not yet working so not yet merged on the main branch: Heuristic Branch
+```bash
+cd src/interactive
+python3 game_agents.py
+```
 
 ## MC-RAVE agent
 The *MC-RAVE* agent can be experimented by generating a self-play game based on MC-RAVE algorithm, by running
