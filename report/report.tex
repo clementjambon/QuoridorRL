@@ -238,10 +238,9 @@ Nonetheless, considering the implementation we proposed, we can discuss several 
 \section{Conclusions}
 \label{sec:conclusion}
 
-\bibliographystyle{plain}
-\bibliography{biblio}
-
-\newpage
+%\newpage
+\section{Appendix}
+%\label{}
 \section*{AlphaZero network configuration}
 \label{sec:alphazero-network}
 Even though our \textit{AlphaZero}-like network is close to the one initially proposed in \cite{alphagozero}, we chose smaller parameters due to the reduced size of our game space (see table \ref{tab:alphazero-params} for more details). Our implementation uses \textit{PyTorch}\cite{pytorch} and consists in:
@@ -270,5 +269,8 @@ Even though our \textit{AlphaZero}-like network is close to the one initially pr
     \end{enumerate}
 \end{itemize}
 Note that each convolution is padded with 0 in order to give the same output size as the input.
+
+\bibliographystyle{plain}
+\bibliography{biblio}
 
 \end{document}
