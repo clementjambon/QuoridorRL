@@ -53,7 +53,11 @@ python3 display_state [STATE_STRING]
 To be completed...
 
 ## MC-RAVE agent
-To be completed...
+The *MC-RAVE* agent can be experimented by generating a self-play game based on MC-RAVE algorithm, by running
+```bash
+cd src/mc-rave
+python3 main.py
+```
 
 ## AlphaZero agent
 The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**
