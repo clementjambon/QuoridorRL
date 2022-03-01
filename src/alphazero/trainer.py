@@ -72,7 +72,7 @@ class Trainer:
     def train(self):
 
         # Run for every epochs
-        print("Starting training...")
+        print("Trainer: starting training...")
         for epoch in range(self.epochs):
             # Turn model in training mode
             self.model.train()
@@ -105,16 +105,16 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                if (batch_idx + 1) % 100 == 0:
-                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.
-                          format(epoch, epoch_data_size,
-                                 len(self.game_dataloader.dataset),
-                                 100. * batch_idx / len(self.game_dataloader),
-                                 loss.item()))
+                # if (batch_idx + 1) % 100 == 0:
+                #     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.
+                #           format(epoch, epoch_data_size,
+                #                  len(self.game_dataloader.dataset),
+                #                  100. * batch_idx / len(self.game_dataloader),
+                #                  loss.item()))
 
             epoch_loss /= epoch_data_size
 
             # Print epoch loss
-            print(
-                f'Epoch {epoch}/{self.epochs} completed. Train loss: {epoch_loss:.6f}'
-            )
+            # print(
+            #     f'Epoch {epoch}/{self.epochs} completed. Train loss: {epoch_loss:.6f}'
+            # )

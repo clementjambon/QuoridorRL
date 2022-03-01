@@ -56,7 +56,7 @@ class SelfPlayer:
         return self.save_buffer()
 
     def play_game(self, game_idx):
-        print(f"Playing game {game_idx}")
+        print(f"Selfplayer: playing game {game_idx}")
 
         # Initialize a game and MCTS
         state = QuoridorState(self.game_config)
@@ -106,7 +106,8 @@ class SelfPlayer:
         else:
             reward = -1.0
 
-        print(f"Completed one self-play game won by {state.winner}")
+        print(
+            f"SelfPlayer: completed one self-play game won by {state.winner}")
 
         for player, state_planes, policy in history:
             self.state_buffer.append(
