@@ -43,11 +43,12 @@ python3 game_io.py
 
 The parameters of the interactive version can be tuned with the constants provided in `src/interactive/io_constants.py`.
 
-States stored as string can be visualized thanks to
+States stored as strings in a file can be visualized thanks to
 ```bash
 cd src/interactive
-python3 display_state [STATE_STRING]
+python3 display_states.py [STATE_STRINGS_PATH]
 ```
+To transition from one state to another, press `space`
 
 ## Heuristic agent
 To be completed...

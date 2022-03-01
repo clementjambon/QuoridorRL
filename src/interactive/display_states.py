@@ -12,6 +12,20 @@ sys.path.insert(0,
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state
+from utils import read_history
+
+
+def update_state(environment: QuoridorEnv, state: QuoridorState, history,
+                 history_idx) -> None:
+    # Prevents players from taking actions if the game is over
+    if history_idx < len(history):
+        state.load_from_string(history[history_idx])
+        print(state.to_string(add_nb_walls=True, add_current_player=True))
+        print(state.walls)
+        print([
+            action.to_string()
+            for action in environment.get_possible_actions(state)
+        ])
 
 
 def main():
@@ -19,15 +33,18 @@ def main():
     # Initialize Quoridor Config
     game_config = QuoridorConfig(grid_size=5, max_walls=5, max_t=100)
 
-    # Initialize Quoridor State with the provided string
-    state = QuoridorState(game_config)
-    if len(sys.argv) > 1:
-        state.load_from_string(sys.argv[1])
-        print(sys.argv[1])
-        print(state.to_string(add_nb_walls=True, add_current_player=True))
-        print(state.walls)
+    # Initialize environment
+    environment = QuoridorEnv(game_config)
 
-    action_mode = 0
+    # Initialize Quoridor State with the provided history
+    state = QuoridorState(game_config)
+
+    history_idx = 0
+    if len(sys.argv) > 1:
+        history = read_history(sys.argv[1])
+        update_state(environment, state, history, history_idx)
+    else:
+        history = []
 
     pg.init()
     screen = pg.display.set_mode(SIZE, pg.SCALED)
@@ -79,13 +96,16 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT or event.type == pg.K_ESCAPE:
                 rendering = False
+            elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                update_state(environment, state, history, history_idx)
+                history_idx += 1
         # draw
         screen.blit(background, (0, 0))
         draw_board(screen, game_config, cell)
         draw_state(screen, game_config, state, pawn_0, pawn_1, horizontal_wall,
                    vertical_wall)
         #draw_debug_offsets(screen, game_config, (5, 5), 11)
-        draw_gui(screen, game_config, state, action_mode, state.done)
+        draw_gui(screen, game_config, state, 0, state.done)
         pg.display.flip()
 
     pg.quit()

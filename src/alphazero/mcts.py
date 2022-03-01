@@ -4,10 +4,11 @@ from math import sqrt
 from copy import deepcopy, copy
 import numpy as np
 import time
+import os
 
 from alphazero import QuoridorRepresentation, QuoridorModel
 from environment import QuoridorState, QuoridorEnv, QuoridorConfig
-from utils import change_action_perspective
+from utils import change_action_perspective, write_history
 
 
 class ActionRecord:
@@ -86,8 +87,14 @@ class MCTS:
         state_record = self.tree[state_str]
 
         # Update action probabilities by renormalizing over valid actions
+        # Just after expansion, get all possible actions
         if state_record.pi_s is not None:
             sum_p = 0
+            # print(state.to_string(add_nb_walls=True, add_current_player=True))
+            # print([
+            #     action.to_string()
+            #     for action in environment.get_possible_actions(state)
+            # ])
             for action in environment.get_possible_actions(state):
                 action_idx = action.to_perspective(
                     state.current_player,
@@ -105,8 +112,8 @@ class MCTS:
             state_record.pi_s = None
 
         best_val = -float('inf')
-        best_action = -1
-        for action, action_record in state_record.actions.items():
+        best_action_idx = -1
+        for action_idx, action_record in state_record.actions.items():
             P_sa = action_record.P_sa
             # If we're in the root state, apply dirichlet noise
             if is_root_state:
@@ -118,9 +125,10 @@ class MCTS:
                 state_record.N_s) / (1 + action_record.N_sa)
             if val > best_val:
                 best_val = val
-                best_action = action
-
-        return best_action
+                best_action_idx = action_idx
+        if best_action_idx == -1:
+            print("No best action")
+        return best_action_idx
 
 
 # NOTE: make sure the searched state is in canonical form
@@ -134,13 +142,22 @@ class MCTS:
         feature_planes = deepcopy(init_feature_planes)
         explored_branches = []
         branch_value = 0.0
+        # history = []
+        # last_state_t = 0
 
         # Search the tree
         # TODO: deal with None cases
         while True:
             if state is None:
                 # THIS SHOULD NOT HAPPEN
-                # print("MCTS: search ended with None state!")
+                print("MCTS: search ended with None state!")
+                print(history)
+                # print(last_state_t)
+                # write_history(
+                #     os.path.abspath(
+                #         os.path.join(os.path.dirname(__file__),
+                #                      '../../data/test.txt')), history)
+                # exit()
                 break
 
             if state.done:
@@ -154,7 +171,11 @@ class MCTS:
                         branch_value = -1.0
                 break
 
-            state_str = state.to_string()
+            state_str = state.to_string(add_nb_walls=True,
+                                        add_current_player=True)
+            # history.append(
+            #     state.to_string(add_nb_walls=True, add_current_player=True))
+            # last_state_t = state.t
             #print(f"Searching {state_str} with depth {len(feature_planes)}")
             current_feature_plane = self.state_representation.generate_instant_planes(
                 state)
@@ -217,13 +238,16 @@ class MCTS:
 
             # NOTE: deepcopy the state before performing a state, otherwise, it will be modified!
             init_state = deepcopy(state)
+            # print(
+            #     f"MCTS: searching state {init_state.to_string(add_nb_walls=True, add_current_player=True)}"
+            # )
             self.search(environment, init_state, previous_feature_planes)
             # if (i + 1) % (nb_simulations // 10) == 0:
             #     print(
             #         f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'
             #     )
 
-        state_str = state.to_string()
+        state_str = state.to_string(add_nb_walls=True, add_current_player=True)
         state_record = self.tree[state_str]
 
         # Collect policy from state_record

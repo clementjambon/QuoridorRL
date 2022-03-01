@@ -68,6 +68,9 @@ class SelfPlayer:
         while not state.done:
             # Take action following MCTS
             temperature = self.selfplay_config.initial_temperature if state.t < self.selfplay_config.tempered_steps else 0.0
+            # print(
+            #     f"Self-player: searching state {state.to_string(add_nb_walls=True, add_current_player=True)} with temperate {temperature}"
+            # )
             action, policy = mcts.select_action(
                 self.environment,
                 state,
@@ -87,9 +90,9 @@ class SelfPlayer:
 
             # Follow the selected action
             state = self.environment.step_from_index(state, action_idx=action)
-            print(
-                f"Reached state {state.to_string(add_nb_walls=True, add_current_player=True)}, terminal state: {state.done}"
-            )
+            # print(
+            #     f"Selfplayer: reached state {state.to_string(add_nb_walls=True, add_current_player=True)}, terminal state: {state.done}"
+            # )
 
         # Add the game reward and create a state buffer
 

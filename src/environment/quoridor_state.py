@@ -54,8 +54,8 @@ class QuoridorState:
 
     def to_string(self,
                   invariance=False,
-                  add_nb_walls=False,
-                  add_current_player=False):
+                  add_nb_walls=True,
+                  add_current_player=True):
         # invariance specifies whether we make it invariant to the current player or not
         # add_nb_walls specifies whether we add the number of remaining walls for each player at the end of the string
         state_str = ""
