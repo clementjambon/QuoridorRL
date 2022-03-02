@@ -81,14 +81,14 @@ Various modifications of the basic Monte Carlo tree search method have been prop
 \subsection{Training without human knowledge}
 \label{ssec:human-knowledge}
 
-As seen in paragraph \ref{ssec:complexity}, \textit{Quoridor} is a game with very high state and branching complexities. Consequently, given the existing computational resources and considering that a decision must be provided by our agent in a moderately realistic amount of time, we cannot perform an exhaustive tree search such as MinMax. Therefore, we turned to an \textit{AlphaGo} approach as presented in \cite{alphago}.
+As seen in paragraph \ref{ssec:complexity}, Quoridor is a game with very high state and branching complexities. Consequently, given the existing computational resources and considering that a decision must be provided by our agent in a moderately realistic amount of time, we cannot perform an exhaustive tree search such as MinMax. Therefore, we turned to an \textit{AlphaGo} approach as presented in \cite{alphago}.
 
-In order to perform Monte-Carlo Tree Search over the large complexity space of \textit{Quoridor} and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we chose a \textit{"self-play"} approach similar to the one initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}. Furthermore, unlike \textit{AlphaGo}, \textit{AlphaZero} does not require handcrafted features and is thus more suited to the problem of solving a new game from scratch, as its neural network learns itself to capture features through residual convolutions of the game board. 
+In order to perform Monte-Carlo Tree Search over the large complexity space of Quoridor and considering the lack of game data contrary to well-known and already analysed, we faced the challenge of training our model without human knowledge. To this extent, we chose a \textit{"self-play"} approach similar to the one initially presented in  \textit{AlphaGoZero}\cite{alphagozero} and later expanded to a larger set of games (namely Chess and Shogi) in \textit{AlphaZero}\cite{alphazero}. Furthermore, unlike \textit{AlphaGo}, \textit{AlphaZero} does not require handcrafted features and is thus more suited to the problem of solving a new game from scratch, as its neural network learns itself to capture features through residual convolutions of the game board. 
 
 \section{Environment}
 \label{sec:environment}
 
- \textit{Quoridor} being a little-known board game, there is, to our knowledge, no public implementation of its mechanics for the purpose of training RL agents. As a consequence, we provide with this project a turn-based environment with a \textit{gym}-like (cf. \cite{openai-gym})
+ Quoridor being a little-known board game, there is, to our knowledge, no public implementation of its mechanics for the purpose of training RL agents. As a consequence, we provide with this project a turn-based environment with a \textit{gym}-like (cf. \cite{openai-gym})
 
 In order to limit the computational burden due to the very large complexity of the game in its original configuration, we chose to simplify the state space by restricting ourselves to the following rules:
 \begin{itemize}
@@ -132,7 +132,7 @@ In order to visualize and play games abstracted by the aforementioned logic, we 
 
 \subsection{Decision Making, MinMax and Heuristics}\label{ssec:heuristics}
 
-This section presents a basic decision making approach we propose to solve the game of \textit{Quoridor}. There are two strategies our agent can take whose usages depend on two factors: the first being that you have no more walls to place on the board, and the second being you still do.
+This section presents a basic decision making approach we propose to solve the game of Quoridor. There are two strategies our agent can take whose usages depend on two factors: the first being that you have no more walls to place on the board, and the second being you still do.
 In the former, if you cannot place anymore walls on the board the agent proceeds by moving in the shortest-path manner which is calculated with the Djistra method. 
 In the latter, we decide what our next move is using a MinMax tree.
 
@@ -175,7 +175,7 @@ with $c$  as a mixing parameter.
     \end{enumerate}
 
 
-    Unlike \textit{AlphaGo}\cite{alphago} whose expansion was guided by a network trained by supervision on real human-generated data, \textit{AlphaZero} uses self-play schemes to generate training samples without human knowledge which makes it particularly interesting in the context of \textit{Quoridor} for which we have no collected data. We adapted these schemes to our \textit{Quoridor} environment as follows. We first randomly initialize the evaluation network $f_{\theta_0}$ with random weights $\theta_0$ and then proceed iteratively:
+    Unlike \textit{AlphaGo}\cite{alphago} whose expansion was guided by a network trained by supervision on real human-generated data, \textit{AlphaZero} uses self-play schemes to generate training samples without human knowledge which makes it particularly interesting in the context of Quoridor for which we have no collected data. We adapted these schemes to our Quoridor environment as follows. We first randomly initialize the evaluation network $f_{\theta_0}$ with random weights $\theta_0$ and then proceed iteratively:
     \begin{enumerate}
         \item the last trained network $f_{\theta_i}$ is used to generate self-play games where each move is chosen according to a \textit{MCTS} as described above. More precisely, actions are chosen following the search policy given by the visit counts of the root edges accumulated during the search and tempered with a temperature parameter $\tau$ i.e. $\boldsymbol{\pi}(.|s_0)=\frac{N(s_0,.)^\frac{1}{\tau}}{\sum_{b\in\mathcal{A}}N(s_0, b)^\frac{1}{\tau}}$ and we record state-action-outcome tuples $(s_t, \boldsymbol{\pi}_t, z)$ where $z$ is $1, -1, 0$ respectively for a victory, a defeat or a draw.
         \item the network is $f_{\theta_{i+1}}$ is initialized with the weights of $f_{\theta_i}$ and trained with batches of self-play records sampled by previous models i.e $f_{\theta_i}, f_{\theta_{i-1}}, \ldots$. The idea of the training is to make the network match the \textit{MCTS} search policy $\boldsymbol{\pi}$ and real outcome of the episode $v$ (not the one estimated at the time of the search!). To do so, we use an MSE loss on the value, a cross-entropy loss on the estimated policy and add $L2$ regularization:
@@ -215,7 +215,7 @@ with $c$  as a mixing parameter.
     \label{tab:alphazero-params}
     \end{table}
 
-    Parameters used for the above-mentioned optimization cycle are shown in table \ref{tab:alphazero-params}. The architecture of the estimation network is given in appendix \ref{sec:alphazero-network} and is directly inspired from the work of \cite{alphazero}. More interestingly, it leverages the 2D geometric structure (and thus invariances) of the \textit{Quoridor} board through a 2D state representation. The previously described state space $s_t$ is indeed turned into a \textit{"plane"}-based representation $F_t$ with the following $3$ feature planes:
+    Parameters used for the above-mentioned optimization cycle are shown in table \ref{tab:alphazero-params}. The architecture of the estimation network is given in appendix \ref{sec:alphazero-network} and is directly inspired from the work of \cite{alphazero}. More interestingly, it leverages the 2D geometric structure (and thus invariances) of the Quoridor board through a 2D state representation. The previously described state space $s_t$ is indeed turned into a \textit{"plane"}-based representation $F_t$ with the following $3$ feature planes:
     \begin{itemize}
         \item a one-hot encoding plane for the current player (i.e. $0$ everywhere and $1$ at the player plosition)
         \item a one-hot encoding plane for the opponent player 
@@ -245,7 +245,7 @@ Nonetheless, considering the implementation we proposed, we can discuss several 
 
 \section{Conclusions}
 \label{sec:conclusion}
-In this paper, Reinforcement Learning approaches are discussed in the context of the zero-sum two-player game of \textit{Quoridor}. Various methods were considered but only few suited the constraints imposed by the properties and rules of \textit{Quoridor}. A \textit{Monte-Carlo Tree Search} approach is performed through the implementation of \textit{MC-RAVE}, an AlphaZero-like agent has been implemented and is currently being trained, and a heuristics-based approach is evaluated leveraging \textit{Minimax} and shortest path searches. Although the obtention of conclusive results is still pending, significant efforts have gone into the agents and the approaches look promising given their successes in the literature. In the remaining time we plan to train all agents and perform a detailed comparative analysis, as well as improve the efficiency of our decision making methods with the implementation of the Alpha-Beta pruning method.
+In this paper, Reinforcement Learning approaches are discussed in the context of the zero-sum two-player game of Quoridor. Various methods were considered but only few suited the constraints imposed by the properties and rules of Quoridor. A \textit{Monte-Carlo Tree Search} approach is performed through the implementation of \textit{MC-RAVE}, an AlphaZero-like agent has been implemented and is currently being trained, and a heuristics-based approach is evaluated leveraging \textit{Minimax} and shortest path searches. Although the obtention of conclusive results is still pending, significant efforts have gone into the agents and the approaches look promising given their successes in the literature. In the remaining time we plan to train all agents and perform a detailed comparative analysis, as well as improve the efficiency of our decision making methods with the implementation of the Alpha-Beta pruning method.
 
 \newpage
 \section{Appendix}\label{sec:appendix}
