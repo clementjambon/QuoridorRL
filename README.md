@@ -1,5 +1,5 @@
-# QuoridorRL
-*an INF581 project by Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon*
+# QuoridorRL: solving a two-player strategy game with reinforcement learning
+*an INF581 project*
 
 This repository provides an environment for the two-player zero-sum Quoridor game and several implementations of agents targeting human-level control (namely [Heuristic agent](#heuristic-agent), [MC-RAVE agent](#mc-rave-agent) and [AlphaZero agent](#alphazero-agent)).
 
@@ -223,7 +223,7 @@ Manager Config:
 ```
 
 ### GUI
-Trained models can be played agains using the above-mentioned GUI with
+Trained models can be played against using the above-mentioned GUI with
 ```bash
 cd src/alphazero/pipeline
 python3 model_io.py [--model_path MODEL_PATH]
