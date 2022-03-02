@@ -30,7 +30,7 @@ pip3 install -r requirements.txt
 
 ## Environment
 
-The game environement is provided as a class `QuoridorEnv` located in `src/environment/quoridor_env.py` which leverages the rule-embedding class `QuoridorState` located in `src/environment/quoridor_state.py`. 
+The game environement is provided as a class `QuoridorEnv` located in `src/environment/quoridor_env.py` which leverages the rule-embedding representation class `QuoridorState` located in `src/environment/quoridor_state.py`. 
 
 The state of the game in intrinsically described by the location in the grid of the two (*0* and *1* indexed) players, the number of walls they have each already placed and a 2D grid of wall positions. In this latter grid, `-1` stands for empty, `0` for an horizontal wall (x-aligned) and `1` for a vertical wall (y-aligned).
 
@@ -66,7 +66,7 @@ python3 main.py
 ```
 
 ## AlphaZero agent
-The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**
+The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**.
 
 ### Self-play
 Self-play games can be generated using a pre-existing model by running
