@@ -118,3 +118,6 @@ class Trainer:
             # print(
             #     f'Epoch {epoch}/{self.epochs} completed. Train loss: {epoch_loss:.6f}'
             # )
+        print(
+            f"Trainer: completed training with {self.epochs} epochs, final train loss: {epoch_loss:.6f}"
+        )

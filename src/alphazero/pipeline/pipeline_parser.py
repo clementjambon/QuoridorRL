@@ -78,6 +78,13 @@ def get_parser() -> ArgumentParser:
         default=20,
         help="number of turns during which temperature is applied")
     selfplay_group.add_argument(
+        '--limited_time',
+        type=float,
+        default=None,
+        help=
+        "limited time in seconds during which a full MCTS can be performed (by default None)"
+    )
+    selfplay_group.add_argument(
         '--model_path',
         type=str,
         default=None,
@@ -114,7 +121,7 @@ def get_parser() -> ArgumentParser:
 
     training_group.add_argument('--learning_rate',
                                 type=float,
-                                default=1e-4,
+                                default=1e-3,
                                 help='learning rate used during training')
 
     # ----------------------------

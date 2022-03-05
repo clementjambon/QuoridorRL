@@ -1,8 +1,6 @@
 import os
 import pickle
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, as_completed
 import numpy as np
-from pygame import init
 
 from environment import QuoridorState, QuoridorConfig, QuoridorEnv
 from alphazero import MCTS, QuoridorRepresentation, QuoridorModel
@@ -15,12 +13,14 @@ class SelfPlayConfig:
                  nb_simulations=200,
                  max_workers=4,
                  initial_temperature=1.0,
-                 tempered_steps=20) -> None:
+                 tempered_steps=20,
+                 limited_time=None) -> None:
         self.nb_games = nb_games
         self.nb_simulations = nb_simulations
         self.max_workers = max_workers
         self.initial_temperature = initial_temperature
         self.tempered_steps = tempered_steps
+        self.limited_time = limited_time
 
 
 class SelfPlayer:
@@ -76,7 +76,8 @@ class SelfPlayer:
                 state,
                 feature_planes,
                 nb_simulations=self.nb_simulations,
-                temperature=temperature)
+                temperature=temperature,
+                limited_time=self.selfplay_config.limited_time)
 
             # Compute state planes
             current_feature_planes = self.representation.generate_instant_planes(

@@ -1,5 +1,5 @@
-# QuoridorRL
-*an INF581 project by Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon*
+# QuoridorRL: solving a two-player strategy game with reinforcement learning
+*an INF581 project*
 
 This repository provides an environment for the two-player zero-sum Quoridor game and several implementations of agents targeting human-level control (namely [Heuristic agent](#heuristic-agent), [MC-RAVE agent](#mc-rave-agent) and [AlphaZero agent](#alphazero-agent)).
 
@@ -30,7 +30,7 @@ pip3 install -r requirements.txt
 
 ## Environment
 
-The game environement is provided as a class `QuoridorEnv` located in `src/environment/quoridor_env.py` which leverages the rule-embedding class `QuoridorState` located in `src/environment/quoridor_state.py`. 
+The game environement is provided as a class `QuoridorEnv` located in `src/environment/quoridor_env.py` which leverages the rule-embedding representation class `QuoridorState` located in `src/environment/quoridor_state.py`. 
 
 The state of the game in intrinsically described by the location in the grid of the two (*0* and *1* indexed) players, the number of walls they have each already placed and a 2D grid of wall positions. In this latter grid, `-1` stands for empty, `0` for an horizontal wall (x-aligned) and `1` for a vertical wall (y-aligned).
 
@@ -51,7 +51,12 @@ python3 display_states.py [STATE_STRINGS_PATH]
 To transition from one state to another, press `space`
 
 ## Heuristic agent
-To be completed...
+Two AI agents can play against each other making choices based on a Minimax search. Go on the heuristic branch to try it. The mouse has to be clicked on the window to tell the agent to make a move.  
+/!\ not yet working so not yet merged on the main branch: Heuristic Branch
+```bash
+cd src/interactive
+python3 game_agents.py
+```
 
 ## MC-RAVE agent
 The *MC-RAVE* agent can be experimented by generating a self-play game based on MC-RAVE algorithm, by running
@@ -61,7 +66,7 @@ python3 main.py
 ```
 
 ## AlphaZero agent
-The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**
+The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**.
 
 ### Self-play
 Self-play games can be generated using a pre-existing model by running
@@ -99,6 +104,9 @@ Self-play config:
                         for the number of --tempered_states)
   --tempered_steps TEMPERED_STEPS
                         number of turns during which temperature is applied
+  --limited_time LIMITED_TIME
+                        limited time in seconds during which a full MCTS can
+                        be performed (by default None)
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
@@ -185,6 +193,9 @@ Self-play config:
                         for the number of --tempered_states)
   --tempered_steps TEMPERED_STEPS
                         number of turns during which temperature is applied
+  --limited_time LIMITED_TIME
+                        limited time in seconds during which a full MCTS can
+                        be performed (by default None)
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
@@ -212,7 +223,7 @@ Manager Config:
 ```
 
 ### GUI
-Trained models can be played agains using the above-mentioned GUI with
+Trained models can be played against using the above-mentioned GUI with
 ```bash
 cd src/alphazero/pipeline
 python3 model_io.py [--model_path MODEL_PATH]
