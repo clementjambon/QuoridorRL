@@ -415,3 +415,17 @@ class QuoridorEnv:
             bool: True is the game is over, False otherwise
         """
         return self.player_win(state, 0) or self.player_win(state, 1)
+
+    #TODO put this function in utils
+    def get_targets_tiles(self, player_idx: int):
+        """
+        get all tiles that correspond to the target of the player
+        """
+        target = self.x_targets[player_idx]
+        targets = []
+        for i in range(self.grid_size):
+            if (target == 0):  #first col
+                targets.append(i)
+            else:  #last col
+                targets.append(i + self.grid_size * (self.grid_size - 1))
+        return targets
