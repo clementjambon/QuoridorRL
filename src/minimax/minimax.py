@@ -1,7 +1,6 @@
 import copy
-from board_graph import BoardGraph
-from quoridor_env import QuoridorEnv
-from quoridor_state import QuoridorState
+from environment import QuoridorEnv
+from environment import QuoridorState
 
 
 def minimax(env: QuoridorEnv, state: QuoridorState, depth: int,
@@ -22,7 +21,7 @@ def minimax(env: QuoridorEnv, state: QuoridorState, depth: int,
         copy_state = copy.deepcopy(state)
         copy_env = copy.deepcopy(env)
         #maximizing : current player
-        list_actions = copy_env.get_possible_actions(copy_state) 
+        list_actions = copy_env.get_possible_actions(copy_state)
         for action in list_actions:
             copy_env.actNoCopy(copy_state, action)
             score = minimax(copy_env, copy_state, depth + 1, False)
@@ -34,12 +33,13 @@ def minimax(env: QuoridorEnv, state: QuoridorState, depth: int,
         copy_env = copy.deepcopy(env)
         #minimizing : opponent
         #copy_state.current_player = (state.current_player + 1) % env.nb_players
-        list_actions =  env.get_possible_actions(copy_state)  
+        list_actions = env.get_possible_actions(copy_state)
         for action in list_actions:
             copy_env.actNoCopy(copy_state, action)
             score = minimax(copy_env, copy_state, depth + 1, True)
             best_score = min(score, best_score)
         return best_score
+
 
 def position_feature(state: QuoridorState, player_idx: int) -> int:
     """

@@ -2,7 +2,7 @@ import numpy as np
 import heapq as heap
 from queue import PriorityQueue
 from collections import defaultdict
-from utils.coords import tile_to_coords
+from utils import tile_to_coords, coords_to_tile
 
 
 class AdjNode:

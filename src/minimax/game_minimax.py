@@ -4,8 +4,6 @@ import sys
 import os
 import pygame as pg
 
-from minimax.minimax import minimax
-
 if not pg.font:
     print("Warning, fonts disabled")
 
@@ -17,9 +15,8 @@ from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state
 from environment.quoridor_action import MoveAction
-from board_graph import BoardGraph
-from utils import pathfinder
-from utils.coords import coords_to_tile, tile_to_coords
+from utils import coords_to_tile, tile_to_coords
+from minimax import minimax, BoardGraph
 
 
 def main():
@@ -74,11 +71,11 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
 
             copy_env.actNoCopy(copy_state, action)
 
-            score = minimax(copy_env,copy_state, 0,False)
+            score = minimax(copy_env, copy_state, 0, False)
 
             if score > best_score:
-                    best_score = score
-                    best_move = action
+                best_score = score
+                best_move = action
 
     return best_move
 
