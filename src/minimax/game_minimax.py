@@ -78,7 +78,7 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
                 #print(best_score)
                 best_score = score
                 best_move = action
-        print(f'action chose is {best_move.type} and score is {best_score}')
+        print(f'action chosen for player {state.current_player} is {best_move.type} and score is {best_score}')
     return best_move
 
 
