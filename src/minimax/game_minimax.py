@@ -58,6 +58,7 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
     if len(move_actions) == len(cur_actions):
         targets = env.get_targets_tiles(state.current_player)
         best_move = shortest_path(state, targets)
+        print(f'no more walls for player {state.current_player} : move to {best_move.player_pos}')
     else:
         best_score = float('-inf')
         best_move = None
@@ -72,11 +73,12 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
             copy_env.actNoCopy(copy_state, action)
 
             score = minimax(copy_env, copy_state, 0, False)
-
+            #print(score)
             if score > best_score:
+                #print(best_score)
                 best_score = score
                 best_move = action
-
+        print(f'action chose is {best_move.type} and score is {best_score}')
     return best_move
 
 

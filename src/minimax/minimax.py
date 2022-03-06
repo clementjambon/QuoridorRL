@@ -1,6 +1,8 @@
 import copy
 from environment import QuoridorEnv
 from environment import QuoridorState
+from minimax.board_graph import BoardGraph
+from utils.coords import coords_to_tile
 
 
 def minimax(env: QuoridorEnv, state: QuoridorState, depth: int,
@@ -28,7 +30,7 @@ def minimax(env: QuoridorEnv, state: QuoridorState, depth: int,
             best_score = max(score, best_score)
         return best_score
     else:
-        best_score = float('-inf')
+        best_score = float('inf')
         copy_state = copy.deepcopy(state)
         copy_env = copy.deepcopy(env)
         #minimizing : opponent
@@ -62,7 +64,7 @@ def position_difference(env: QuoridorEnv, state: QuoridorState) -> int:
     It actually indicates how good your progress is compared to the opponent’s progress.
     """
     return position_feature(state, state.current_player) - position_feature(
-        state, env.get_opponent())
+        state, env.get_opponent(state.current_player))
 
 
 def move_to_next_col_feature(state: QuoridorState, player_idx: int) -> int:
@@ -82,7 +84,7 @@ def move_to_next_col_feature(state: QuoridorState, player_idx: int) -> int:
     board = BoardGraph(state.walls)
     player_position = state.player_positions[player_idx]
 
-    parents_map, node_costs = board.dijkstra(player_position)
+    parents_map, node_costs = board.dijkstra(coords_to_tile( player_position, state.grid_size))
 
     if player_idx == 0:
         next_col = player_position[0] + 1

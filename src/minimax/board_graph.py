@@ -102,7 +102,7 @@ class BoardGraph:
         return adj_list
 
     def dijkstra(
-        self, starting_node
+        self, starting_node: int
     ):  #https://levelup.gitconnected.com/dijkstra-algorithm-in-python-8f0e75e3f16e
         visited = set()
         parents_map = {}
