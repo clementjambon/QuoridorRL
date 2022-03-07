@@ -3,6 +3,7 @@ import copy
 import sys
 import os
 import pygame as pg
+import time
 
 if not pg.font:
     print("Warning, fonts disabled")
@@ -13,7 +14,7 @@ sys.path.insert(0,
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
-from interactive import draw_gui, draw_board, draw_state
+from interactive import draw_gui, draw_board, draw_state, init_surfaces
 from environment.quoridor_action import MoveAction
 from utils import coords_to_tile, tile_to_coords
 from minimax import minimax, BoardGraph
@@ -30,19 +31,60 @@ def main():
     # Initialize Quoridor State
     state = QuoridorState(game_config)
 
+    # Initialize action mode
+    action_mode = 0
+
+    # Min time between steps (in seconds)
+    min_time = 1.0
+
+    pg.init()
+    screen = pg.display.set_mode(SIZE, pg.SCALED)
+    pg.display.set_caption("QuoridorRL")
+
+    background, cell, pawn_0, pawn_1, horizontal_wall, vertical_wall = init_surfaces(
+        screen)
+
+    # Display the background
+    screen.blit(background, (0, 0))
+    pg.display.flip()
+
+    clock = pg.time.Clock()
+    last_time = time.time() - min_time
+
     rendering = True
-    print('rendering')
-    i = 0
-    while i < 100 and not state.done:
-        print("Round " + str(i))
-        i += 1
-        print(state.to_string(False, True, True))
-        # act
-        action = best_action(environment, state)
-        #apply it to state
-        environment.actNoCopy(state, action)
-        print("Position of PLAYER 0: " + str(state.player_positions[0]))
-        print("Position of PLAYER 1: " + str(state.player_positions[1]))
+    while rendering:
+        clock.tick(FPS)
+
+        # handle input events
+        for event in pg.event.get():
+            if event.type == pg.QUIT or event.type == pg.K_ESCAPE:
+                rendering = False
+        # draw
+        screen.blit(background, (0, 0))
+        draw_board(screen, game_config, cell)
+        draw_state(screen, game_config, state, pawn_0, pawn_1, horizontal_wall,
+                   vertical_wall)
+        #draw_debug_offsets(screen, game_config, (5, 5), 11)
+        draw_gui(screen, game_config, state, action_mode, state.done)
+        pg.display.flip()
+
+        if state.t < game_config.max_t and not state.done:
+            time_diff = time.time() - last_time
+            if time_diff < min_time:
+                time.sleep(min_time - time_diff)
+            last_time = time.time()
+
+            print("Round " + str(state.t))
+            state.t += 1
+            print(state.to_string(False, True, True))
+            # act
+            action = best_action(environment, state)
+            #apply it to state
+            environment.actNoCopy(state, action)
+            print("Position of PLAYER 0: " + str(state.player_positions[0]))
+            print("Position of PLAYER 1: " + str(state.player_positions[1]))
+
+    pg.quit()
     print('GAME OVER')
 
 
@@ -58,7 +100,9 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
     if len(move_actions) == len(cur_actions):
         targets = env.get_targets_tiles(state.current_player)
         best_move = shortest_path(state, targets)
-        print(f'no more walls for player {state.current_player} : move to {best_move.player_pos}')
+        print(
+            f'no more walls for player {state.current_player} : move to {best_move.player_pos}'
+        )
     else:
         best_score = float('-inf')
         best_move = None
@@ -78,7 +122,9 @@ def best_action(env: QuoridorEnv, state: QuoridorState) -> Action:
                 #print(best_score)
                 best_score = score
                 best_move = action
-        print(f'action chosen for player {state.current_player} is {best_move.type} and score is {best_score}')
+        print(
+            f'action chosen for player {state.current_player} is {best_move.type} and score is {best_score}'
+        )
     return best_move
 
 
