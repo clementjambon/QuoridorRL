@@ -1,6 +1,42 @@
-from interactive import CELL_PADDING, CELL_SIZE, INNER_CELL_SIZE, ACTION_DESCRIPTIONS, TEXT_COLOR
+from interactive import CELL_PADDING, CELL_SIZE, INNER_CELL_SIZE, ACTION_DESCRIPTIONS, TEXT_COLOR, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, WALL_THICKNESS, WALL_COLOR
 from environment import QuoridorState, QuoridorConfig
 import pygame as pg
+
+
+def init_surfaces(screen: pg.Surface):
+    # Background
+    background = pg.Surface(screen.get_size())
+    background = background.convert()
+    background.fill((170, 238, 187))
+
+    # Cell surface
+    cell = pg.Surface((INNER_CELL_SIZE, INNER_CELL_SIZE))
+    cell = cell.convert()
+    cell.fill(EMPTY_CELL_COLOR)
+
+    # Player 0 (white) pawn
+    pawn_0 = pg.Surface((INNER_CELL_SIZE, INNER_CELL_SIZE))
+    pawn_0 = pawn_0.convert()
+    pawn_0.fill(PAWN_0_COLOR)
+
+    # Player 1 (black) pawn
+    pawn_1 = pg.Surface((INNER_CELL_SIZE, INNER_CELL_SIZE))
+    pawn_1 = pawn_1.convert()
+    pawn_1.fill(PAWN_1_COLOR)
+
+    # Horizontal wall
+    horizontal_wall = pg.Surface(
+        (2 * INNER_CELL_SIZE + WALL_THICKNESS, WALL_THICKNESS))
+    horizontal_wall = horizontal_wall.convert()
+    horizontal_wall.fill(WALL_COLOR)
+
+    # Vertical wall
+    vertical_wall = pg.Surface(
+        (WALL_THICKNESS, 2 * INNER_CELL_SIZE + WALL_THICKNESS))
+    vertical_wall = vertical_wall.convert()
+    vertical_wall.fill(WALL_COLOR)
+
+    return background, cell, pawn_0, pawn_1, horizontal_wall, vertical_wall
 
 
 def draw_gui(screen: pg.Surface, game_config: QuoridorConfig,
