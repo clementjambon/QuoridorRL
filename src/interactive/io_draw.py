@@ -56,14 +56,14 @@ def draw_gui(screen: pg.Surface, game_config: QuoridorConfig,
         wall_text = font.render(
             f"P0 walls: {state.nb_walls[0]}/{game_config.max_walls} -- P1 walls: {state.nb_walls[1]}/{game_config.max_walls}",
             True, TEXT_COLOR)
-        wall_text_pos = (0, game_config.grid_size * CELL_SIZE + 128)
+        wall_text_pos = (0, game_config.grid_size * CELL_SIZE + 64 * 2)
         screen.blit(wall_text, wall_text_pos)
 
         command_font = pg.font.Font(None, 35)
         command_text = command_font.render(
             f"Command: click on space bar to change action mode", True,
             (128, 128, 128))
-        command_text_pos = (0, game_config.grid_size * CELL_SIZE + 192)
+        command_text_pos = (0, game_config.grid_size * CELL_SIZE + 64 * 4)
         screen.blit(command_text, command_text_pos)
 
         if done:
@@ -71,7 +71,7 @@ def draw_gui(screen: pg.Surface, game_config: QuoridorConfig,
                 f"Game is over: player {state.winner} won!"
                 if state.winner >= 0 else "Game is over: ended with a draw!",
                 True, TEXT_COLOR)
-            done_text_pos = (0, game_config.grid_size * CELL_SIZE + 64 * 2)
+            done_text_pos = (0, game_config.grid_size * CELL_SIZE + 64 * 3)
             screen.blit(done_text, done_text_pos)
 
 
