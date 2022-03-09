@@ -69,20 +69,21 @@ def main():
         pg.display.flip()
 
         if state.t < game_config.max_t and not state.done:
+            # The following is used to make sure the refresh rate of actions is not too high
             time_diff = time.time() - last_time
             if time_diff < min_time:
                 time.sleep(min_time - time_diff)
             last_time = time.time()
 
-            print("Round " + str(state.t))
+            #print("Round " + str(state.t))
             state.t += 1
             print(state.to_string(False, True, True))
             # act
             action = best_action(environment, state)
             #apply it to state
             environment.actNoCopy(state, action)
-            print("Position of PLAYER 0: " + str(state.player_positions[0]))
-            print("Position of PLAYER 1: " + str(state.player_positions[1]))
+            #print("Position of PLAYER 0: " + str(state.player_positions[0]))
+            #print("Position of PLAYER 1: " + str(state.player_positions[1]))
 
     pg.quit()
     print('GAME OVER')
