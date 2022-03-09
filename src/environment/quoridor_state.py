@@ -9,7 +9,6 @@ DIRGRAD = ["h", "v"]
 
 
 class QuoridorState:
-
     def __init__(self, game_config: QuoridorConfig) -> None:
         self.grid_size = game_config.grid_size
 
@@ -42,20 +41,25 @@ class QuoridorState:
         self.player_positions[0] = string_to_coords(splits[0])
         self.player_positions[1] = string_to_coords(splits[1])
         # Map walls
-        for i in range(2, len(splits) - 4):
+        for i in range(2, len(splits) - 5):
             wall_position = string_to_coords(splits[i])
             wall_direction = 0 if splits[i][2] == 'h' else 1
             self.walls[wall_position] = wall_direction
         # Map nb_walls
-        self.nb_walls[0] = int(splits[len(splits) - 4][3:])
-        self.nb_walls[1] = int(splits[len(splits) - 3][3:])
+        self.nb_walls[0] = int(splits[len(splits) - 5][3:])
+        self.nb_walls[1] = int(splits[len(splits) - 4][3:])
         # Map current player
-        self.current_player = int(splits[len(splits) - 2][1])
+        self.current_player = int(splits[len(splits) - 3][1])
+        # Map time
+        print(splits[len(splits) - 2].split(":"))
+        self.t = int(splits[len(splits) - 2].split(":")[1])
+        print(self.t)
 
     def to_string(self,
                   invariance=False,
                   add_nb_walls=True,
-                  add_current_player=True):
+                  add_current_player=True,
+                  add_time=True):
         # invariance specifies whether we make it invariant to the current player or not
         # add_nb_walls specifies whether we add the number of remaining walls for each player at the end of the string
         state_str = ""
@@ -85,6 +89,9 @@ class QuoridorState:
 
         if add_current_player:
             state_str += "p" + str(self.current_player) + ";"
+
+        if add_time:
+            state_str += "t:" + str(self.t) + ";"
 
         return state_str
         # return str(np.rot90(self.walls, 2 * self.current_player)) + str(
