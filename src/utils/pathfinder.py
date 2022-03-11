@@ -50,27 +50,36 @@ class PathFinder:
 
     # TODO: handle mutliple dimensions (i.e remove x_target and add other heuristics)
     def check_path(self, walls, player_pos, x_target) -> bool:
-        seen = np.zeros((self.grid_size, self.grid_size), dtype=np.uint8)
-        unseen = PriorityQueue()
-        unseen.put((0, player_pos))
-        while not unseen.empty():
-            _, current_pos = unseen.get()
-            # Mark current_pos as "seen"
-            seen[current_pos] = 1
+        # Holding the shortest valid paths
+        g_scores = float('inf') * np.ones((self.grid_size, self.grid_size))
+
+        open_queue = PriorityQueue()
+        open_set = set()
+        # Add (s_start, h(s_start)) to the priority queue
+        open_queue.put((abs(player_pos[0] - x_target), player_pos))
+        open_set.add(player_pos)
+        # and 0 g-score at starting position
+        g_scores[player_pos] = 0
+        while not open_queue.empty():
+            _, current_pos = open_queue.get()
+
+            # Get neighbours
             neighbours = self.get_neighbours(walls, current_pos)
             # print(f'{current_pos} - {self.get_neighbours(walls, current_pos)}')
             for neighbour in neighbours:
-                if seen[neighbour] != 1:
+                # Compute tentative g_score (+1 in manhattan distance)
+                tentative_g_score = g_scores[current_pos] + 1
+                if tentative_g_score < g_scores[neighbour]:
+                    # If the path improves, update it
+                    g_scores[neighbour] = tentative_g_score
                     if neighbour[0] == x_target:
-                        # print(
-                        #     f"PathFinder: path found from {player_pos} to {neighbour}"
-                        # )
                         return True
                     else:
-                        cost = self.manhattan_distance(
-                            player_pos,
-                            neighbour) + abs(neighbour[0] - x_target)
-                        unseen.put((cost, neighbour))
+                        if neighbour not in open_set:
+                            open_queue.put(
+                                (tentative_g_score +
+                                 abs(player_pos[0] - x_target), neighbour))
+                            open_set.add(neighbour)
         # print(
         #     f"PathFinder: path NOT found from {player_pos} to {x_target} x_target"
         # )
