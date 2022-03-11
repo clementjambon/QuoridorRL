@@ -113,8 +113,8 @@ class QuoridorModel(nn.Module):
                  device,
                  game_config: QuoridorConfig,
                  representation: QuoridorRepresentation,
-                 nb_residual_blocks=15,
-                 nb_filters=128,
+                 nb_residual_blocks=9,
+                 nb_filters=64,
                  kernel_size=3,
                  stride=1,
                  load_dir: str = None) -> None:
@@ -176,6 +176,9 @@ class QuoridorModel(nn.Module):
         v = self.value_head(x)
 
         return p, v
+
+    def description(self) -> str:
+        return f"Model: residual blocks={self.nb_residual_blocks}; filters={self.nb_filters}"
 
     def to_string(self, uuid_based=False):
         model_str = ""

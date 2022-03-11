@@ -22,6 +22,9 @@ class SelfPlayConfig:
         self.tempered_steps = tempered_steps
         self.limited_time = limited_time
 
+    def description(self) -> str:
+        return f"SelfPlayConfig: nb_games={self.nb_games}; nb_simulations(MCTS):{self.nb_simulations}; max_workers(NOT WORKING)={self.max_workers}; inital_temperature={self.initial_temperature}; tempered_steps={self.tempered_steps}; limited_time={self.limited_time}"
+
 
 class SelfPlayer:
 
@@ -47,6 +50,13 @@ class SelfPlayer:
         self.state_buffer = []
 
     def play_games(self):
+        print("###################################")
+        print(f"SelfPlayer starting {self.nb_games} with:")
+        print(self.selfplay_config.description())
+        print(self.game_config.description())
+        print(self.model.description())
+        print(self.representation.description())
+        print("###################################")
         # Don't forget to put model in evaluation mode
         self.model.eval()
         # TODO: use multithreading to play games

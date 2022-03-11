@@ -78,3 +78,6 @@ class QuoridorRepresentation:
         # Rotate (180°=2x90°) w.r.t. the current player
         # TODO: check rotation axes!
         return torch.rot90(state_planes, k=2, dims=(1, 2))
+
+    def description(self) -> str:
+        return f"Representation: time_consistency={self.time_consistency}; features={self.nb_features}; constants={self.nb_constants}; total channels={self.nb_channels}"

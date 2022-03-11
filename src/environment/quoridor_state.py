@@ -9,6 +9,7 @@ DIRGRAD = ["h", "v"]
 
 
 class QuoridorState:
+
     def __init__(self, game_config: QuoridorConfig) -> None:
         self.grid_size = game_config.grid_size
 

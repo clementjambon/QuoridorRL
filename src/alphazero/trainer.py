@@ -20,6 +20,9 @@ class TrainingConfig:
         self.regularization_param = regularization_param
         self.learning_rate = learning_rate
 
+    def description(self) -> str:
+        return f"TrainingConfig: batch_size={self.batch_size}; epochs={self.epochs}; regularization_params={self.regularization_param}; learning_rate={self.learning_rate};"
+
 
 class GameDataset(Dataset):
 
@@ -44,6 +47,8 @@ class Trainer:
 
     def __init__(self, device, model: QuoridorModel, game_files, dirname: str,
                  training_config: TrainingConfig) -> None:
+        self.training_config = training_config
+
         self.device = device
         self.model = model
         self.batch_size = training_config.batch_size
@@ -51,6 +56,7 @@ class Trainer:
 
         self.dirname = dirname
 
+        self.nb_game_files = len(game_files)
         self.game_dataset = GameDataset(game_files)
         self.game_dataloader = DataLoader(self.game_dataset,
                                           batch_size=self.batch_size,
@@ -70,9 +76,13 @@ class Trainer:
         return -torch.sum(p * torch.log(q)) / q.size()[0]
 
     def train(self):
-
+        print("###################################")
+        print("Trainer starting training:")
+        print(f"GameDataset: loaded {self.nb_game_files} self-play records")
+        print(self.model.description())
+        print(self.training_config.description())
+        print("###################################")
         # Run for every epochs
-        print("Trainer: starting training...")
         for epoch in range(self.epochs):
             # Turn model in training mode
             self.model.train()

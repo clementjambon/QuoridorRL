@@ -44,7 +44,7 @@ def get_parser() -> ArgumentParser:
     model_group.add_argument(
         '--nb_residual_blocks',
         type=int,
-        default=15,
+        default=9,
         help='number of residual blocks used in the model')
 
     # ----------------------------
