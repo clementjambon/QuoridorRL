@@ -5,6 +5,7 @@ from environment import QuoridorState, MoveAction, QuoridorAction, WallAction, Q
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
+from utils.ufind_custom import UFindCustom
 
 # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
 DIRECT_OFFSETS = [((-1, 0), [(-1, 0), (-1, -1)], 1),
@@ -52,7 +53,6 @@ INDIRECT_OFFSETS = [
 
 
 class QuoridorEnv:
-
     def __init__(self, game_config: QuoridorConfig) -> None:
         """ Initializes a Quoridor game state
 
@@ -70,6 +70,9 @@ class QuoridorEnv:
 
         # initialize the pathfinder used to check valid wall placement
         self.pathfinder = PathFinder(self.grid_size)
+
+        # initialize ufind structure used to check valid wall placement
+        self.ufind = UFindCustom(self.grid_size)
 
     def get_opponent(self, player_idx: int) -> int:
         """Returns the opponent of the provided player
@@ -267,14 +270,15 @@ class QuoridorEnv:
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
-        # Test pathfinding i.e make sure he cannot block the opponent from reaching its goal (in practice, he can block himself)
-        state.walls[wall_position] = direction
-        for i in range(self.nb_players):
-            if not self.pathfinder.check_path(
-                    state.walls, state.player_positions[i], self.x_targets[i]):
-                state.walls[wall_position] = -1
-                return False
-        state.walls[wall_position] = -1
+        # # Test pathfinding i.e make sure he cannot block the opponent from reaching its goal (in practice, he can block himself)
+        # state.walls[wall_position] = direction
+        # for i in range(self.nb_players):
+        #     if not self.pathfinder.check_path(
+        #             state.walls, state.player_positions[i], self.x_targets[i]):
+        #         state.walls[wall_position] = -1
+        #         return False
+        # state.walls[wall_position] = -1
+        # Test connected components with UFind heuristic
 
         return True
 
