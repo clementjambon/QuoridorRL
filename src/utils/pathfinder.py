@@ -67,9 +67,7 @@ class PathFinder:
                         # )
                         return True
                     else:
-                        cost = self.manhattan_distance(
-                            player_pos,
-                            neighbour) + abs(neighbour[0] - x_target)
+                        cost = 1 + abs(neighbour[0] - x_target)
                         unseen.put((cost, neighbour))
         # print(
         #     f"PathFinder: path NOT found from {player_pos} to {x_target} x_target"
