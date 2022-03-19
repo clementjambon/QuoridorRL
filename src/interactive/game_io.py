@@ -36,7 +36,6 @@ def handle_click(environment: QuoridorEnv, state: QuoridorState,
                            int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
         direction = 0 if action_mode == 1 else 1
         if environment.can_add_wall(state, target_position, direction):
-            print(type(state))
             state = environment.add_wall(state, target_position, direction)
         else:
             print(
@@ -46,12 +45,12 @@ def handle_click(environment: QuoridorEnv, state: QuoridorState,
 
     # DEBUG
     # print the set of actions that the new player can take
-    possible_actions = environment.get_possible_actions(state)
-    possible_actions_str = [action.to_string() for action in possible_actions]
+    # possible_actions = environment.get_possible_actions(state)
+    # possible_actions_str = [action.to_string() for action in possible_actions]
 
-    print(
-        f"Debug: possible actions for player {state.current_player} are {possible_actions_str}"
-    )
+    # print(
+    #     f"Debug: possible actions for player {state.current_player} are {possible_actions_str}"
+    # )
 
 
 def main():
