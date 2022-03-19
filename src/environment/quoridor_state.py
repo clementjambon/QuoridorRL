@@ -1,6 +1,6 @@
 import numpy as np
 from environment import QuoridorConfig
-from utils import string_to_coords
+from utils import string_to_coords, UFindCC
 
 # TODO: extand this in case of bigger grid_size
 XGRAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -9,7 +9,6 @@ DIRGRAD = ["h", "v"]
 
 
 class QuoridorState:
-
     def __init__(self, game_config: QuoridorConfig) -> None:
         self.grid_size = game_config.grid_size
 
@@ -35,6 +34,9 @@ class QuoridorState:
 
         # initialize the current player
         self.current_player = 0
+
+        # initialize ufind structure used to test whether a new cc is added
+        self.ufind = UFindCC(self.grid_size)
 
     def load_from_string(self, state_str: str):
         splits = state_str.split(";")

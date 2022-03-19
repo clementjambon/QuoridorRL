@@ -1,11 +1,8 @@
-from hashlib import new
-import numpy as np
 from copy import deepcopy
 from environment import QuoridorState, MoveAction, QuoridorAction, WallAction, QuoridorConfig
 
 from utils import add_offset, is_in_bound
 from utils import PathFinder
-from utils.ufind_custom import UFindCustom
 
 # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
 DIRECT_OFFSETS = [((-1, 0), [(-1, 0), (-1, -1)], 1),
@@ -53,6 +50,7 @@ INDIRECT_OFFSETS = [
 
 
 class QuoridorEnv:
+
     def __init__(self, game_config: QuoridorConfig) -> None:
         """ Initializes a Quoridor game state
 
@@ -70,9 +68,6 @@ class QuoridorEnv:
 
         # initialize the pathfinder used to check valid wall placement
         self.pathfinder = PathFinder(self.grid_size)
-
-        # initialize ufind structure used to check valid wall placement
-        self.ufind = UFindCustom(self.grid_size)
 
     def get_opponent(self, player_idx: int) -> int:
         """Returns the opponent of the provided player
@@ -115,12 +110,12 @@ class QuoridorEnv:
             wall_position = (wall_idx // (self.grid_size - 1),
                              wall_idx % (self.grid_size - 1))
 
-            # TODO: remove this in production (should not be triggered)
-            if not self.can_add_wall(state, wall_position, wall_direction):
-                print(
-                    f"{state.current_player} cannot add wall at position {wall_position} and with direction {wall_direction} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}"
-                )
-                return
+            # NOTE: remove this in production (should not be triggered)
+            # if not self.can_add_wall(state, wall_position, wall_direction):
+            #     print(
+            #         f"{state.current_player} cannot add wall at position {wall_position} and with direction {wall_direction} in state: {state.to_string(add_nb_walls=True, add_current_player=True)}"
+            #     )
+            #     return
 
             next_state = self.add_wall(state, wall_position, wall_direction)
 
@@ -270,6 +265,20 @@ class QuoridorEnv:
                     wall_position[0], wall_position[1] + 1)] == 0:
                 return False
 
+        # Test new wall connected components
+        new_wall_cc = state.ufind.check_wall(wall_position, direction)
+        # If necessary, perform pathfinding
+        if new_wall_cc:
+            # print("Performing pathfinding")
+            state.walls[wall_position] = direction
+            for i in range(self.nb_players):
+                if not self.pathfinder.check_path(state.walls,
+                                                  state.player_positions[i],
+                                                  self.x_targets[i]):
+                    state.walls[wall_position] = -1
+                    return False
+            state.walls[wall_position] = -1
+
         # # Test pathfinding i.e make sure he cannot block the opponent from reaching its goal (in practice, he can block himself)
         # state.walls[wall_position] = direction
         # for i in range(self.nb_players):
@@ -294,6 +303,7 @@ class QuoridorEnv:
         player_idx = state.current_player
         state.nb_walls[player_idx] += 1
         state.walls[wall_position] = direction
+        state.ufind.add_wall(wall_position, direction)
         state.current_player = self.get_opponent(player_idx)
         state.t += 1
         state.done = self.player_win(state,
