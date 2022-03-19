@@ -51,11 +51,10 @@ python3 display_states.py [--history_path HISTORY_PATH] / [--state_str STATE_STR
 To transition from one state to another, press `space`
 
 ## Heuristic agent
-Two AI agents can play against each other making choices based on a Minimax search. Go on the heuristic branch to try it. The mouse has to be clicked on the window to tell the agent to make a move.  
-/!\ not yet working so not yet merged on the main branch: Heuristic Branch
+Two AI agents can play against each other making choices based on a Minimax search. To do so, 
 ```bash
-cd src/interactive
-python3 game_agents.py
+cd src/minimax
+python3 game_minimax.py
 ```
 
 ## MC-RAVE agent
