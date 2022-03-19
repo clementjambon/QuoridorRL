@@ -51,7 +51,7 @@ python3 display_states.py [--history_path HISTORY_PATH] / [--state_str STATE_STR
 To transition from one state to another, press `space`
 
 ## Heuristic agent
-Two AI agents can play against each other making choices based on a Minimax search. To do so, 
+You can play against our heuristic-based agent (the agent plays by making choices based on a Minimax search). To do so, 
 ```bash
 cd src/minimax
 python3 game_minimax.py

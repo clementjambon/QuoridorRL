@@ -20,6 +20,45 @@ from utils import coords_to_tile, tile_to_coords
 from minimax import minimax, BoardGraph
 
 
+def handle_click(environment: QuoridorEnv, state: QuoridorState,
+                 action_mode: int) -> None:
+    # Prevents players from taking actions if the game is over and it is not its turn
+    if state.done and state.current_player != 0:
+        return None
+
+    mouse_pos = pg.mouse.get_pos()
+    if action_mode == 0:
+        target_position = (mouse_pos[0] // CELL_SIZE,
+                           mouse_pos[1] // CELL_SIZE)
+        if environment.can_move_pawn(state, target_position):
+            state = environment.move_pawn(state, target_position)
+        else:
+            print(
+                f"QuoridorEnv: cannot move player {state.current_player} to target position {target_position}"
+            )
+            return
+    else:
+        target_position = (int((mouse_pos[0] - CELL_SIZE / 2) // CELL_SIZE),
+                           int((mouse_pos[1] - CELL_SIZE / 2) // CELL_SIZE))
+        direction = 0 if action_mode == 1 else 1
+        if environment.can_add_wall(state, target_position, direction):
+            state = environment.add_wall(state, target_position, direction)
+        else:
+            print(
+                f"QuoridorEnv: cannot place wall for player {state.current_player} to target position {target_position} and direction {direction}"
+            )
+            return
+
+    # DEBUG
+    # print the set of actions that the new player can take
+    # possible_actions = environment.get_possible_actions(state)
+    # possible_actions_str = [action.to_string() for action in possible_actions]
+
+    # print(
+    #     f"Debug: possible actions for player {state.current_player} are {possible_actions_str}"
+    # )
+
+
 def main():
 
     # Initialize Quoridor Config
@@ -59,6 +98,10 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT or event.type == pg.K_ESCAPE:
                 rendering = False
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                handle_click(environment, state, action_mode)
+            elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                action_mode = (action_mode + 1) % 3
         # draw
         screen.blit(background, (0, 0))
         draw_board(screen, game_config, cell)
@@ -68,7 +111,8 @@ def main():
         draw_gui(screen, game_config, state, action_mode, state.done)
         pg.display.flip()
 
-        if state.t < game_config.max_t and not state.done:
+        # if the agent must play
+        if state.current_player == 1 and state.t < game_config.max_t and not state.done:
             # The following is used to make sure the refresh rate of actions is not too high
             time_diff = time.time() - last_time
             if time_diff < min_time:
