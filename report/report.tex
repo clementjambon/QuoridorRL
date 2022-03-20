@@ -214,7 +214,7 @@ where $c$  is a mixing parameter.
 \label{sec:results}
 
 \subsection{MC-RAVE}
-We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ iterations per turn. These values empirically allowed to have a performant bot. We provide two modes: one is self-play, which consists in playing bot versus bot ; the second one, more interesting here, is human vs bot. Due to the large number of possible actions, we need to perform 1000 iterations per turn. As a consequence, runtimes are significantly affected (see Figure \ref{sec:appendix}). Furthermore, note that the decision time depends on how close we are to the end of the game (see Figure \ref{fig:game}).
+We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ iterations per turn. These values empirically allowed to have a performant bot. We provide two modes: self-play which consists in playing bot versus bot, and, more interestingly, a human vs bot mode. Due to the large number of possible actions, we need to perform 1000 iterations per turn. As a consequence, runtimes are significantly affected (see Figure \ref{sec:appendix}). Furthermore, we noticed that the decision time depends on how close we are to the end of the game (see Figure \ref{fig:game}).
 
 \begin{table}[h]
         \centering
@@ -229,9 +229,9 @@ We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ itera
     \label{tab:execution_time}
     \end{table}
 
-However, as a player we feel like if we were playing against a human. Indeed, as an experiment, we played human vs bot, allowing the human only to move its pawn. The purposes of this experiment are to show that our bot is able to use walls to be better than a shortest path algorithm, and to win even if he does not play first. Such a game is presented in Figure \ref{fig:game}. As we can see, the bot (in black) seems to develop a complex strategy to win.
+In the human vs. bot mode, you really feel as though you are playing against a human. As an experiment, we played human vs. bot, allowing the human to only play pawn moves. The purpose of this experiment was to show that our bot is able to use walls to be better than a shortest path algorithm, and to win even if he does not play first. Such a game is presented in Figure \ref{fig:game}. As we can see, the bot (in black) seems to develop a complex strategy to win.
 
-These results are very satisfying. The main issue remains speed, and this could be partly solved by using a machine with higher performances.
+These results are very satisfying. The main issue remains speed, which could partly be solved by using a machine with higher computational power.
 
 \subsection{AlphaZero}
 As of today, we have not yet managed to train a satisfying \textit{AlphaZero}-like agent. The main constraints are the computational resources required to generate self-play games as each of them results in many \textit{MCTS} evaluations for each decision and inherently lots of model inferences. Despite the use of CUDA-supporting hardware, we did not manage to train our model with satisfying results.
