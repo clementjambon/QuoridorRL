@@ -62,7 +62,8 @@ if __name__ == "__main__":
         limited_time=args.limited_time,
         str_history=args.str_history,
         verbose=args.verbose,
-        display_mode=args.display_mode)
+        display_mode=args.display_mode,
+        intermediate_reward=args.intermediate_reward)
 
     self_player = SelfPlayer(init_model, game_config, environment,
                              representation, dir_path, selfplay_config)

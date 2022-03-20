@@ -28,7 +28,7 @@ def get_parser() -> ArgumentParser:
 
     game_group.add_argument('--max_t',
                             type=int,
-                            default=100,
+                            default=50,
                             help='maximum number of time steps in a game')
     # ----------------------------
     # MODEL CONFIG
@@ -90,6 +90,11 @@ def get_parser() -> ArgumentParser:
         "limited time in seconds during which a full MCTS can be performed (by default None)"
     )
     selfplay_group.add_argument(
+        '--intermediate_reward',
+        type=bool,
+        default=False,
+        help="whether to use handcrafted intermediate rewards or not")
+    selfplay_group.add_argument(
         '--model_path',
         type=str,
         default=None,
@@ -108,8 +113,8 @@ def get_parser() -> ArgumentParser:
         '--display_mode',
         type=bool,
         default=False,
-        help='specifies whether to display the current state of the game or not'
-    )
+        help=
+        'specifies whether to display the current state of the game or nots')
 
     # ----------------------------
     # TRAINING CONFIG

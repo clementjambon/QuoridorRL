@@ -12,7 +12,6 @@ from utils import change_action_perspective, write_history
 
 
 class ActionRecord:
-
     def __init__(self) -> None:
         self.N_sa = 0
         self.W_sa = 0
@@ -21,7 +20,6 @@ class ActionRecord:
 
 
 class StateRecord:
-
     def __init__(self) -> None:
         self.actions = defaultdict(ActionRecord)
         # The sum over all actions expanded in this node record
@@ -30,7 +28,6 @@ class StateRecord:
 
 
 class MCTS:
-
     def __init__(self,
                  game_config: QuoridorConfig,
                  model: QuoridorModel,
@@ -59,7 +56,8 @@ class MCTS:
                       previous_feature_planes,
                       nb_simulations: int = 800,
                       temperature: float = 1,
-                      limited_time: float = None):
+                      limited_time: float = None,
+                      intermediate_reward=False):
         # Selects an action provided the current state
 
         # Don't forget to reset the tree
@@ -71,7 +69,8 @@ class MCTS:
                                   previous_feature_planes,
                                   nb_simulations=nb_simulations,
                                   temperature=temperature,
-                                  limited_time=limited_time)
+                                  limited_time=limited_time,
+                                  intermediate_reward=intermediate_reward)
 
         # Return the action according to the provided policy distribution
         return change_action_perspective(
@@ -135,6 +134,95 @@ class MCTS:
 
 # Feature_planes provide the already computed feature_planes
 
+    def search_intermediate(self, environment: QuoridorEnv,
+                            state: QuoridorState, init_feature_planes):
+
+        feature_planes = deepcopy(init_feature_planes)
+        explored_branches = []
+        branch_value = 0.0
+        # history = []
+        # last_state_t = 0
+
+        # Search the tree
+        # TODO: deal with None cases
+        while True:
+            if state is None:
+                # THIS SHOULD NOT HAPPEN
+                print("MCTS: search ended with None state!")
+                # print(history)
+                # print(last_state_t)
+                # write_history(
+                #     os.path.abspath(
+                #         os.path.join(os.path.dirname(__file__),
+                #                      '../../data/test.txt')), history)
+                # exit()
+                break
+
+            state_str = state.to_string(add_nb_walls=True,
+                                        add_current_player=True)
+            # history.append(
+            #     state.to_string(add_nb_walls=True, add_current_player=True))
+            # last_state_t = state.t
+            #print(f"Searching {state_str} with depth {len(feature_planes)}")
+            current_feature_plane = self.state_representation.generate_instant_planes(
+                state)
+            feature_planes.append(current_feature_plane)
+
+            # If the searched state is not in the tree, EXPAND
+            if state_str not in self.tree:
+                state_planes = self.state_representation.generate_state_planes(
+                    state, feature_planes)
+                p, v = self.model(
+                    state_planes.unsqueeze(0).to(self.model.device))
+                p = p[0]
+                self.tree[state_str].pi_s = p
+                branch_value = v
+                break
+
+            # Otherwise, select and iterate
+            action_idx = self.puct_action(environment, state, state_str)
+
+            # Drop the search if reaching action_idx=-1
+            if action_idx == -1:
+                return
+
+            # Get next_state after taking action
+            state = environment.step_from_index(
+                state,
+                change_action_perspective(state.current_player, action_idx,
+                                          environment.grid_size))
+
+            if state.done:
+                if state.winner == -1:
+                    reward = 0.0
+                else:
+                    if state.winner == state.current_player:
+                        # In practice, this should not happen!
+                        reward = 1.0
+                    else:
+                        reward = -1.0
+                break
+            else:
+                reward = environment.get_intermediate_reward(
+                    state, environment.get_opponent(state.current_player))
+
+            # Track (state, action pairs)
+            explored_branches.append((state_str, action_idx, reward))
+
+        # print(f"Backing up {len(explored_branches)} branches")
+
+        # Backup values
+        # NOTE: add virtual loss when adding multithreading!
+        for state_str, action_idx, reward in reversed(explored_branches):
+            # NOTE: make sure to reverse the propagated value!
+
+            current_state_record = self.tree[state_str]
+            current_action_record = current_state_record.actions[action_idx]
+            current_state_record.N_s += 1
+            current_action_record.N_sa += 1
+            current_action_record.W_sa += reward
+            current_action_record.Q_sa = current_action_record.W_sa / current_action_record.N_sa
+
     def search(self, environment: QuoridorEnv, state: QuoridorState,
                init_feature_planes):
         # TODO: filter valid actions!
@@ -151,7 +239,7 @@ class MCTS:
             if state is None:
                 # THIS SHOULD NOT HAPPEN
                 print("MCTS: search ended with None state!")
-                print(history)
+                # print(history)
                 # print(last_state_t)
                 # write_history(
                 #     os.path.abspath(
@@ -230,7 +318,8 @@ class MCTS:
                     previous_feature_planes,
                     nb_simulations: int = 800,
                     temperature: float = 1,
-                    limited_time: float = None):
+                    limited_time: float = None,
+                    intermediate_reward=False):
 
         start_time = time.time()
 
@@ -245,7 +334,11 @@ class MCTS:
             # print(
             #     f"MCTS: searching state {init_state.to_string(add_nb_walls=True, add_current_player=True)}"
             # )
-            self.search(environment, init_state, previous_feature_planes)
+            if intermediate_reward:
+                self.search_intermediate(environment, init_state,
+                                         previous_feature_planes)
+            else:
+                self.search(environment, init_state, previous_feature_planes)
             # if (i + 1) % (nb_simulations // 10) == 0:
             #     print(
             #         f'Performed {i+1} simulations out of {nb_simulations} ({(i+1)/(nb_simulations)*100}%)'

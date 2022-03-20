@@ -65,7 +65,11 @@ if __name__ == "__main__":
         max_workers=args.max_workers,
         initial_temperature=args.initial_temperature,
         tempered_steps=args.tempered_steps,
-        limited_time=args.limited_time)
+        limited_time=args.limited_time,
+        str_history=args.str_history,
+        verbose=args.verbose,
+        display_mode=args.display_mode,
+    )
 
     manager = Manager(device,
                       nb_iterations=args.nb_iterations,

@@ -20,7 +20,8 @@ class SelfPlayConfig:
                  limited_time=None,
                  str_history=False,
                  verbose=False,
-                 display_mode=False) -> None:
+                 display_mode=False,
+                 intermediate_reward=False) -> None:
         self.nb_games = nb_games
         self.nb_simulations = nb_simulations
         self.max_workers = max_workers
@@ -30,9 +31,10 @@ class SelfPlayConfig:
         self.str_history = str_history
         self.verbose = verbose
         self.display_mode = display_mode
+        self.intermediate_reward = intermediate_reward
 
     def description(self) -> str:
-        return f"SelfPlayConfig: nb_games={self.nb_games}; nb_simulations(MCTS):{self.nb_simulations}; max_workers(NOT WORKING)={self.max_workers}; inital_temperature={self.initial_temperature}; tempered_steps={self.tempered_steps}; limited_time={self.limited_time}"
+        return f"SelfPlayConfig: nb_games={self.nb_games}; nb_simulations(MCTS):{self.nb_simulations}; max_workers(NOT WORKING)={self.max_workers}; inital_temperature={self.initial_temperature}; tempered_steps={self.tempered_steps}; limited_time={self.limited_time}; intermediate_reward={self.intermediate_reward}"
 
 
 class SelfPlayer:
@@ -117,7 +119,8 @@ class SelfPlayer:
                 feature_planes,
                 nb_simulations=self.nb_simulations,
                 temperature=temperature,
-                limited_time=self.selfplay_config.limited_time)
+                limited_time=self.selfplay_config.limited_time,
+                intermediate_reward=self.selfplay_config.intermediate_reward)
 
             # Compute state planes
             current_feature_planes = self.representation.generate_instant_planes(
@@ -137,13 +140,16 @@ class SelfPlayer:
                 print(
                     f"Selfplayer: reached state {state.to_string(add_nb_walls=True, add_current_player=True)}, terminal state: {state.done}"
                 )
+                print(
+                    f"After this step, intermediate reward is {self.environment.get_intermediate_reward(state, self.environment.get_opponent(state.current_player))}"
+                )
 
             if self.selfplay_config.display_mode:
                 self.screen.blit(self.background, (0, 0))
                 draw_board(self.screen, self.game_config, self.cell)
                 draw_state(self.screen, self.game_config, state, self.pawn_0,
                            self.pawn_1, self.horizontal_wall,
-                           self.vertical_wall, True)
+                           self.vertical_wall, False)
                 draw_gui(self.screen, self.game_config, state, 0, state.done)
                 pg.display.flip()
 
