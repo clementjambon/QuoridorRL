@@ -14,7 +14,8 @@ class MCTSNode():
                  player_idx,
                  parent=None,
                  parent_action=None,
-                 depth=0):
+                 depth=0,
+                 iterations=1000):
         self.env = env
         self.state = state
         self.player_idx = player_idx
@@ -30,6 +31,7 @@ class MCTSNode():
         # print('initialized')
         self._untried_actions = self.untried_actions()
         self.depth = depth
+        self.it = iterations
         return
 
     def untried_actions(self):
@@ -178,7 +180,7 @@ class MCTSNode():
 
     def best_action(self):
         # print('looking for best action')
-        for i in trange(100):
+        for i in trange(self.it):
             node = self._tree_policy()
             # print(self.children)
             # print('tree policy done')
