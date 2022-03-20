@@ -227,7 +227,24 @@ where $c$  is a mixing parameter.
 \label{sec:results}
 
 \subsection{MC-RAVE}
-For this draft version of the paper, we don't have final results to present. We trained our agent by self-play, as described above, with parameters $k=1000$ and $c=0.1$. Next step will be to evaluate the performance of such a trained agent.
+We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ iterations per turn. These values empirically allowed to have a performant bot. We provide two modes: one is self-play, which consists in playing bot versus bot. The second one, more interesting here, is human vs bot. A specificity of our problem is the large action space because of the numerous potential walls. This is the main reason why we have to perform 1000 iterations per turn, so speed of execution is impacted (see Figure \ref{sec:appendix}). Note that time to decide a move depends on how close is the end of the game (see Figure \ref{fig:game}).
+
+\begin{table}[h]
+        \centering
+        \begin{tabular}{llll}
+            \toprule
+            & 10 & 100 & 1000 \\
+            \midrule
+            \textbf{Average time to decide (s)} & 1.5 & 9.16 & 176.9 \\
+            \bottomrule
+        \end{tabular}
+    \caption{MC-RAVE: Average time to decide a move for different numbers of iterations}
+    \label{tab:execution_time}
+    \end{table}
+
+However, as a player we feel like if we were playing against a human. Indeed, as an experiment, we played human vs bot, allowing the human only to move its pawn. The purposes of this experiment are to show that our bot is able to use walls to be better than a shortest path algorithm, and to win even if he does not play first. Such a game is presented in Figure \ref{fig:game}. As we can see, the bot (in black) seems to develop a complex strategy to win.
+
+These results are very satisfying. The main issue remains speed, and this could be partly solved by using a machine with higher performances.
 
 \subsection{AlphaZero}
 As of today, we have not yet managed to train a satisfying \textit{AlphaZero}-like agent. The main constraints are the computational resources required to generate self-play games as each of them results in many \textit{MCTS} evaluations for each decision and inherently lots of model inferences. Despite the use of CUDA-supporting hardware, we are still training models and will update our results in the final version of this paper.
@@ -279,6 +296,17 @@ Even though our \textit{AlphaZero}-like network is close to the one initially pr
     \end{enumerate}
 \end{itemize}
 Note that each convolution is padded with 0 in order to give the same output size as the input.
+
+\section*{Game against MC-RAVE}
+\label{sec:game}
+We (white) played against our MC-RAVE agent (black). We decided to use only moving actions, while MC-RAVE was free to play according to the rules of Quoridor. However, we played what could be considered as one of the best move at each step. MC-RAVE agent won this game. Figure \ref{fig:game} shows each step of the game, with runtime when the agent plays.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/game.png}
+    \caption{Game Human vs MC-RAVE}
+    \label{fig:game}
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{biblio}
