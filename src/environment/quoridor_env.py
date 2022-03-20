@@ -219,7 +219,8 @@ class QuoridorEnv:
         player_won = (state.player_positions[player_idx][0] ==
                       self.x_targets[player_idx])
         # If the corresponding player won, set the winner to its index
-        state.winner = player_idx
+        if player_won:
+            state.winner = player_idx
         return player_won
 
     def can_add_wall(self, state: QuoridorState, wall_position,
@@ -446,3 +447,17 @@ class QuoridorEnv:
             else:  #last col
                 targets.append(i + self.grid_size * (self.grid_size - 1))
         return targets
+
+    def get_intermediate_reward(self, state: QuoridorState,
+                                player_idx: int) -> float:
+        """Get the current intermediate reward from the provided player perspective
+        This intermed
+
+        Args:
+            state (QuoridorState): the current state to evaluate
+            player_idx (int): the player whose perspective you want to observe
+
+        Returns:
+            float: the intermediate reward
+        """
+        pass

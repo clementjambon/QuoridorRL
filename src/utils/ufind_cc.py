@@ -13,7 +13,8 @@ class UFindCC:
         self.nb_elements = 2 * (grid_size - 1) * (grid_size - 1) + 4
         self.border_threshold = 2 * (grid_size - 1) * (grid_size - 1)
         self.grid_size = grid_size
-        self.parents = [i for i in range(self.nb_elements)]
+        self.parents = [(-1 if i < self.border_threshold else i)
+                        for i in range(self.nb_elements)]
 
     def wall_to_tile(self, pos, direction):
         if direction == 0:
@@ -41,23 +42,39 @@ class UFindCC:
                     adjacent_list.append(border_idx)
         return len(adjacent_list) > 1
 
-    def add_wall(self, pos, direction):
+    def add_wall(self, pos, direction, verbose=False):
         # Test borders directly
         tile = self.wall_to_tile(pos, direction)
         if pos[direction] == 0:
             self.parents[tile] = self.border_threshold + direction
+            if verbose:
+                print(
+                    f"Parent of {pos} is now {self.border_threshold + direction} (threshold at {self.border_threshold})"
+                )
             return
         if pos[direction] == self.grid_size - 2:
             self.parents[tile] = self.border_threshold + direction + 2
+            if verbose:
+                print(
+                    f"Parent of {pos} is now {self.border_threshold + direction + 2} (threshold at {self.border_threshold}) "
+                )
             return
         # Then test neighbours
         for offset, offset_dir in (OFFSETS_X if direction == 0 else OFFSETS_Y):
             nghb_pos = add_offset(pos, offset)
             if is_in_bound(nghb_pos, self.grid_size - 1):
                 nghb_tile = self.wall_to_tile(nghb_pos, offset_dir)
-                if self.parents[nghb_tile] != nghb_tile:
+                if self.parents[nghb_tile] >= 0:
                     self.union(tile, nghb_tile)
+                    if verbose:
+                        print(
+                            f"Parent of {pos} is now {self.find(tile)} (threshold at {self.border_threshold}) "
+                        )
                     return
+
+        self.parents[tile] = tile
+        if verbose:
+            print("No parent addind tile!")
 
     def get_wall_cc(self, pos, direction):
         if direction < 0:
