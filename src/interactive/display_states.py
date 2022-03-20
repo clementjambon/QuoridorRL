@@ -12,7 +12,7 @@ sys.path.insert(0,
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
-from interactive import draw_gui, draw_board, draw_state, init_surfaces
+from interactive import draw_gui, draw_board, draw_state, init_surfaces, draw_debug_adjacent
 from utils import read_history
 
 
@@ -99,6 +99,7 @@ def main():
                    vertical_wall)
         #draw_debug_offsets(screen, game_config, (5, 5), 11)
         draw_gui(screen, game_config, state, 0, state.done)
+        #draw_debug_adjacent(screen, (2, 2), 1, horizontal_wall, vertical_wall)
         pg.display.flip()
 
     pg.quit()

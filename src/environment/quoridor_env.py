@@ -50,7 +50,6 @@ INDIRECT_OFFSETS = [
 
 
 class QuoridorEnv:
-
     def __init__(self, game_config: QuoridorConfig) -> None:
         """ Initializes a Quoridor game state
 
@@ -269,7 +268,7 @@ class QuoridorEnv:
         new_wall_cc = state.ufind.check_wall(wall_position, direction)
         # If necessary, perform pathfinding
         if new_wall_cc:
-            # print("Performing pathfinding")
+            #print("QuoridorEnv: New CC, performing pathfinding")
             state.walls[wall_position] = direction
             for i in range(self.nb_players):
                 if not self.pathfinder.check_path(state.walls,

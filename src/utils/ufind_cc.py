@@ -60,6 +60,12 @@ class UFindCC:
                     self.union(tile, nghb_tile)
                     return
 
+    def get_wall_cc(self, pos, direction):
+        if direction < 0:
+            return -1
+        tile = self.wall_to_tile(pos, direction)
+        return self.find(tile)
+
     def find(self, i) -> int:
         # Perform flattening if necessary
         if self.parents[i] != i:

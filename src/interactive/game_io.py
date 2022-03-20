@@ -2,6 +2,8 @@ import sys
 import os
 import pygame as pg
 
+from interactive.io_draw import draw_horizontal_wall, draw_vertical_wall
+
 if not pg.font:
     print("Warning, fonts disabled")
 
@@ -12,6 +14,7 @@ sys.path.insert(0,
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state, init_surfaces
+from utils import add_offset
 
 
 def handle_click(environment: QuoridorEnv, state: QuoridorState,

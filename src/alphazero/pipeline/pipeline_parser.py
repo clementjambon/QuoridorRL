@@ -8,6 +8,11 @@ def get_parser() -> ArgumentParser:
         description='Parameters for all pipelines (i.e. self-play and training)'
     )
 
+    parser.add_argument('--verbose',
+                        type=bool,
+                        default=False,
+                        help='print logs in verbose mode')
+
     # ----------------------------
     # GAME CONFIG
     # ----------------------------
@@ -94,6 +99,17 @@ def get_parser() -> ArgumentParser:
         type=str,
         default=None,
         help='path where self-play records will be written')
+    selfplay_group.add_argument(
+        '--str_history',
+        type=bool,
+        default=False,
+        help='specifies whether to store string selfplay records or not')
+    selfplay_group.add_argument(
+        '--display_mode',
+        type=bool,
+        default=False,
+        help='specifies whether to display the current state of the game or not'
+    )
 
     # ----------------------------
     # TRAINING CONFIG
