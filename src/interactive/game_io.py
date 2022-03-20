@@ -2,8 +2,6 @@ import sys
 import os
 import pygame as pg
 
-from interactive.io_draw import draw_horizontal_wall, draw_vertical_wall
-
 if not pg.font:
     print("Warning, fonts disabled")
 

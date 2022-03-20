@@ -1,5 +1,5 @@
 # QuoridorRL: solving a two-player strategy game with reinforcement learning
-*an INF581 project*
+*an INF581 project by Nathan Pollet, Rebecca Jaubert, Laura Minkova, Erwan Umlil and Clément Jambon*
 
 This repository provides an environment for the two-player zero-sum Quoridor game and several implementations of agents targeting human-level control (namely [Heuristic agent](#heuristic-agent), [MC-RAVE agent](#mc-rave-agent) and [AlphaZero agent](#alphazero-agent)).
 
@@ -68,7 +68,7 @@ python3 main.py
 The *AlphaZero* agent can be trained by generating successively self-play games with previous models and training the new model by sampling experiences from those self-play games. To this extent, we provide two dedicated pipelines (namely the **self-play pipeline** and the **training pipeline**) which can be executed independently or successively using the overall **manager pipeline**.
 
 ### Self-play
-Self-play games can be generated using a pre-existing model by running
+Self-play games can be generated using a pre-existing or randomly initialzed model by running
 ```bash 
 cd src/alphazero/pipeline
 python3 selfplay_pipeline.py
@@ -106,14 +106,22 @@ Self-play config:
   --limited_time LIMITED_TIME
                         limited time in seconds during which a full MCTS can
                         be performed (by default None)
+  --intermediate_reward INTERMEDIATE_REWARD
+                        whether to use handcrafted intermediate rewards or not
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
   --model_path MODEL_PATH
                         path of the model used to generate self-plays
   --output_dir OUTPUT_DIR
                         path where self-play records will be written
+  --str_history STR_HISTORY
+                        specifies whether to store string selfplay records or
+                        not
+  --display_mode DISPLAY_MODE
+                        specifies whether to display the current state of the
+                        game or not
 ```
-
+More interestingly, they can be visualized by setting `--display_mode True`.
 
 ### Training
 A network can be loaded and trained from a set of self-play games thanks to
@@ -195,12 +203,18 @@ Self-play config:
   --limited_time LIMITED_TIME
                         limited time in seconds during which a full MCTS can
                         be performed (by default None)
+  --intermediate_reward INTERMEDIATE_REWARD
+                        whether to use handcrafted intermediate rewards or not
   --max_workers MAX_WORKERS
                         number of parallel workers (DISABLED for now)
-  --model_path MODEL_PATH
-                        path of the model used to generate self-plays
   --output_dir OUTPUT_DIR
                         path where self-play records will be written
+  --str_history STR_HISTORY
+                        specifies whether to store string selfplay records or
+                        not
+  --display_mode DISPLAY_MODE
+                        specifies whether to display the current state of the
+                        game or not
 
 Training Config:
   --selfplay_paths SELFPLAY_PATHS [SELFPLAY_PATHS ...]

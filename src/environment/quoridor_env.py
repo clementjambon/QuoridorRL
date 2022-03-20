@@ -1,7 +1,7 @@
 from copy import deepcopy
 from environment import QuoridorState, MoveAction, QuoridorAction, WallAction, QuoridorConfig
 
-from utils import add_offset, is_in_bound
+from utils import add_offset, is_in_bound, pathfinder
 from utils import PathFinder
 
 # Offsets are defined as (pos_offset, wall_offsets, wall_direction)
@@ -460,4 +460,10 @@ class QuoridorEnv:
         Returns:
             float: the intermediate reward
         """
-        pass
+        return (self.pathfinder.find_shortest(
+            state.walls, state.player_positions[self.get_opponent(player_idx)],
+            self.x_targets[self.get_opponent(player_idx)]) -
+                self.pathfinder.find_shortest(
+                    state.walls, state.player_positions[player_idx],
+                    self.x_targets[player_idx])) / (self.grid_size *
+                                                    self.grid_size)

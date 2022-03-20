@@ -126,16 +126,10 @@ def main():
     state = QuoridorState(game_config)
 
     # Load the model against which we want to play
-    if args.output_dir is None:
-        model_path = os.path.join(os.path.dirname(__file__),
-                                  '../../../data/self_play/default-model.pt')
-    else:
-        model_path = args.model_path
-
     model = QuoridorModel(device,
                           game_config,
                           representation,
-                          load_dir=model_path,
+                          load_dir=args.model_path,
                           nb_filters=args.nb_filters,
                           nb_residual_blocks=args.nb_residual_blocks)
     model = model.to(device)

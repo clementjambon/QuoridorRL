@@ -1,10 +1,10 @@
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
+import queue
 import numpy as np
 from utils import is_in_bound
 
 
 class PathFinder:
-
     def __init__(self, grid_size: int) -> None:
         self.grid_size = grid_size
 
@@ -73,3 +73,29 @@ class PathFinder:
         #     f"PathFinder: path NOT found from {player_pos} to {x_target} x_target"
         # )
         return False
+
+    # Find shortest path with Djikstra
+    def find_shortest(self, walls, player_pos, x_target) -> int:
+        dist = self.grid_size * self.grid_size * np.ones(
+            (self.grid_size, self.grid_size), dtype=np.uint8)
+        seen = self.grid_size * self.grid_size * np.zeros(
+            (self.grid_size, self.grid_size), dtype=np.uint8)
+        queue = PriorityQueue()
+        queue.put((0, player_pos))
+        dist[player_pos] = 0
+        seen[player_pos] = 1
+        shortest_to_target = self.grid_size * self.grid_size
+        while not queue.empty():
+            _, current_pos = queue.get()
+            neighbours = self.get_neighbours(walls, current_pos)
+            for neighbour in neighbours:
+                if dist[current_pos] + 1 < dist[neighbour]:
+                    dist[neighbour] = dist[current_pos] + 1
+                if neighbour[0] == x_target and dist[
+                        neighbour] < shortest_to_target:
+                    shortest_to_target = dist[neighbour]
+                if seen[neighbour] != 1:
+                    seen[neighbour] = 1
+                    queue.put((dist[neighbour], neighbour))
+        # Convert to int otherwise will raise issue when substracting results
+        return int(shortest_to_target)
