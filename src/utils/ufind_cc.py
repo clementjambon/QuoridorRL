@@ -8,7 +8,6 @@ OFFSETS_Y = (((0, -2), 1), ((0, 2), 1), ((-1, -1), 0), ((-1, 0), 0),
 
 # Basic union-find structure with parents flattening for O(1) queries
 class UFindCC:
-
     def __init__(self, grid_size: int) -> None:
         # Initialize as many elements as there are possible wall spots
         self.nb_elements = 2 * (grid_size - 1) * (grid_size - 1) + 4
@@ -30,7 +29,7 @@ class UFindCC:
         # Test borders directly
         if pos[direction] == 0:
             adjacent_list.append(direction)
-        if pos[direction] == self.grid_size - 1:
+        if pos[direction] == self.grid_size - 2:
             adjacent_list.append(direction + 2)
         # Then test neighbours
         for offset, offset_dir in (OFFSETS_X if direction == 0 else OFFSETS_Y):
@@ -48,7 +47,7 @@ class UFindCC:
         if pos[direction] == 0:
             self.parents[tile] = self.border_threshold + direction
             return
-        if pos[direction] == self.grid_size - 1:
+        if pos[direction] == self.grid_size - 2:
             self.parents[tile] = self.border_threshold + direction + 2
             return
         # Then test neighbours
