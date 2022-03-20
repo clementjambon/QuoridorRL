@@ -69,6 +69,7 @@ if __name__ == "__main__":
         str_history=args.str_history,
         verbose=args.verbose,
         display_mode=args.display_mode,
+        intermediate_reward=args.intermediate_reward,
     )
 
     manager = Manager(device,
