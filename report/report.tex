@@ -111,20 +111,13 @@ States and actions can also be represented with a \textit{string} notation. Ours
 \end{equation}
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\textwidth]{figures/state-str.png}
+    \includegraphics[width=0.25\textwidth]{figures/state-str.png}
     \caption{Board representation of the state given in equation \ref{eq:state-str}}
     \label{fig:state-str}
 \end{figure}
 
 \subsection{User interface}
-In order to visualize and play games abstracted by the aforementioned logic, we provide a user interface with parameters that can be tuned according to the chosen configuration of the game. To this extent, we used the python \textit{SDL}-based library \textit{PyGame}\cite{pygame}. Our relatively simple, yet functional \textit{GUI} is shown in Figure \ref{fig:gui}.
-\begin{figure}
-    \centering
-    \includegraphics[width=0.3\textwidth]{figures/gui.png}
-    \caption{Provided user interface}
-    \label{fig:gui}
-\end{figure}
-
+In order to visualize and play games abstracted by the aforementioned logic, we provide a user interface with parameters that can be tuned according to the chosen configuration of the game. To this extent, we used the python \textit{SDL}-based library \textit{PyGame}\cite{pygame}. Our relatively simple, yet functional \textit{GUI} is shown in Figure \ref{fig:gui} in the appendix.
 
 \section{Models}
 \label{sec:models}
@@ -214,22 +207,20 @@ where $c$  is a mixing parameter.
         \item a one-hot encoding plane for the opponent player 
         \item a plane for walls where $0, 1, 2$ respectively stand for empty, horizontal wall and vertical wall (all things considered, it could also be interesting to try two different feature planes for both horizontal and vertical walls). Note that the plane of walls is smaller than the board dimensions; we therefore pad it with $0$s.
     \end{itemize}  
-    As the network needs some temporal knowledge of the state, $T-1$ previous state space feature planes are concatenated and constant feature planes $C_t$ specifying respectively which player is playing (i.e. $0$ for player 0, $1$ for player 1), the number of remaining walls for the current player and the number of remaining walls for the opponent player to provide overall $3\times T + 3$ feature planes: $(F_{t-T+1}, \ldots, F_{t-1}, F_t, C_t)$. In order for the representation to be consistent and for the network to capture the dynamics at play, the concatenated feature planes are then rotated (180°) to match the perspective of the current player. Finally, actions are mapped to indices which means that the features abstracted by the convolutional layers are flattened to obtain the policy vector $\mathbf{p}$ (see appendix \ref{sec:alphazero-network} for more details).
-    
-    In evaluation mode, a time parameter can be given and limits the model to human-like evaluation conditions (i.e. tree searches will be performed as long as the agent can do it).
+    As the network needs some temporal knowledge of the state, $T-1$ previous state space feature planes are concatenated and constant feature planes $C_t$ specifying respectively which player is playing, the number of remaining walls for the current player and the number of remaining walls for the opponent player to provide overall $3\times T + 3$ feature planes: $(F_{t-T+1}, \ldots, F_{t-1}, F_t, C_t)$. In order for the representation to be consistent and for the network to capture the dynamics at play, the concatenated feature planes are then rotated ($180°$) to match the perspective of the current player. Finally, actions are mapped to indices thus flattening convolutional layers features to obtain the policy vector $\mathbf{p}$ (see appendix \ref{sec:alphazero-network} for more details). In evaluation mode, a time parameter can be given and limits the model to human-like evaluation conditions (i.e. tree searches will be performed as long as the agent can do it).
 
 
 \section{Results and Discussion}
 \label{sec:results}
 
 \subsection{MC-RAVE}
-We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ iterations per turn. These values empirically allowed to have a performant bot. We provide two modes: one is self-play, which consists in playing bot versus bot. The second one, more interesting here, is human vs bot. A specificity of our problem is the large action space because of the numerous potential walls. This is the main reason why we have to perform 1000 iterations per turn, so speed of execution is impacted (see Figure \ref{sec:appendix}). Note that time to decide a move depends on how close is the end of the game (see Figure \ref{fig:game}).
+We played against our agent with parameters $k=1000$, $c=100.0$ and $1000$ iterations per turn. These values empirically allowed to have a performant bot. We provide two modes: one is self-play, which consists in playing bot versus bot ; the second one, more interesting here, is human vs bot. Due to the large number of possible actions, we need to perform 1000 iterations per turn. As a consequence, runtimes are significantly affected (see Figure \ref{sec:appendix}). Furthermore, note that the decision time depends on how close we are to the end of the game (see Figure \ref{fig:game}).
 
 \begin{table}[h]
         \centering
         \begin{tabular}{llll}
             \toprule
-            & 10 & 100 & 1000 \\
+            \textbf{Number of iterations} & 10 & 100 & 1000 \\
             \midrule
             \textbf{Average time to decide (s)} & 1.5 & 9.16 & 176.9 \\
             \bottomrule
@@ -243,7 +234,13 @@ However, as a player we feel like if we were playing against a human. Indeed, as
 These results are very satisfying. The main issue remains speed, and this could be partly solved by using a machine with higher performances.
 
 \subsection{AlphaZero}
-As of today, we have not yet managed to train a satisfying \textit{AlphaZero}-like agent. The main constraints are the computational resources required to generate self-play games as each of them results in many \textit{MCTS} evaluations for each decision and inherently lots of model inferences. Despite the use of CUDA-supporting hardware, we are still training models and will update our results in the final version of this paper.
+As of today, we have not yet managed to train a satisfying \textit{AlphaZero}-like agent. The main constraints are the computational resources required to generate self-play games as each of them results in many \textit{MCTS} evaluations for each decision and inherently lots of model inferences. Despite the use of CUDA-supporting hardware, we did not manage to train our model with satisfying results.
+
+In addition to the optimization of the environment runtime crucial for fast \textit{MCTS} and detailed in paragraph \ref{ssec:game-logic}, we tried to speed up training by introducing a new intermediate reward based on the relative shortest path of both players. More precisely, at each time step, we optionnaly provided the agen with a reward defined as: 
+\begin{equation}
+    r_t =\frac{\text{shortest path}_\text{opponent}-\text{shortest path}_\text{current player}}{n^2}
+\end{equation}
+where $n$ is the size of the board. In the time allocated for this projected, this extension did not yield satisfying results either. However, we provide all required resources and code to train and test both models (see \textit{README}\footnote{\url{https://github.com/clementjambon/QuoridorRL}})
 
 Nonetheless, considering the implementation we proposed, we can discuss several of our choices and pave the way for future directions:
 \begin{itemize}
@@ -268,11 +265,11 @@ There are two exceptions to the regular taxi-cab moves wherein your pawn is righ
 \label{sec:alphazero-network}
 Even though our \textit{AlphaZero}-like network is close to the one initially proposed in \cite{alphagozero}, we chose smaller parameters due to the reduced size of our game space (see table \ref{tab:alphazero-params} for more details). Our implementation uses \textit{PyTorch}\cite{pytorch} and consists in:
 \begin{itemize}
-    \item a first convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation
+    \item a first convolution of $64$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation
     \item a stack of residual blocks made of:
     \begin{itemize}
-        \item a convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation
-        \item a convolution of $128$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + \textbf{a residual connection} + ReLU activation
+        \item a convolution of $64$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + ReLU activation
+        \item a convolution of $64$ filters of kernel size $3$ with stride $1$ + 2D batch normalization + \textbf{a residual connection} + ReLU activation
     \end{itemize}
     \item two output heads:
     \begin{enumerate}
@@ -286,12 +283,22 @@ Even though our \textit{AlphaZero}-like network is close to the one initially pr
             \begin{itemize}
                 \item a convolution of $1$ filter of kernel size $1$ with stride $1$ + 2D batch normalization + ReLU activation layer
                 \item a flattener
-                \item a dense layer of size $256$ + ReLU activation
+                \item a dense layer of size $64$ + ReLU activation
                 \item a dense layer to output size $1$ + $\tanh$ activation which restricts the output value in $[-1,1]$
             \end{itemize}
     \end{enumerate}
 \end{itemize}
 Note that each convolution is padded with 0 in order to give the same output size as the input.
+
+\section*{User interface}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{figures/gui.png}
+    \caption{Provided user interface}
+    \label{fig:gui}
+\end{figure}
+
 
 \section*{Game against MC-RAVE}
 \label{sec:game}
@@ -300,7 +307,7 @@ We (white) played against our MC-RAVE agent (black). We decided to use only movi
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{figures/game.png}
-    \caption{Game Human vs MC-RAVE}
+    \caption{Game Human vs MC-RAVE with its decision time in minutes}
     \label{fig:game}
 \end{figure}
 
