@@ -9,7 +9,6 @@ from alphazero.quoridor_model import QuoridorModel
 
 
 class TrainingConfig:
-
     def __init__(self,
                  batch_size=32,
                  epochs=100,
@@ -25,7 +24,6 @@ class TrainingConfig:
 
 
 class GameDataset(Dataset):
-
     def __init__(self, game_files) -> None:
         super().__init__()
         self.load_games(game_files)
@@ -44,7 +42,6 @@ class GameDataset(Dataset):
 
 
 class Trainer:
-
     def __init__(self, device, model: QuoridorModel, game_files, dirname: str,
                  training_config: TrainingConfig) -> None:
         self.training_config = training_config

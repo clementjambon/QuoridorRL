@@ -1,9 +1,9 @@
 from alphazero import QuoridorRepresentation, QuoridorModel, SelfPlayConfig, TrainingConfig, Trainer, SelfPlayer
+from alphazero.quoridor_model import ModelConfig
 from environment import QuoridorConfig, QuoridorEnv
 
 
 class Manager:
-
     def __init__(
         self,
         device,
@@ -13,6 +13,7 @@ class Manager:
         save_dir: str,
         selfplay_config: SelfPlayConfig,
         training_config: TrainingConfig,
+        model_config: ModelConfig,
         nb_iterations: int = 20,
         selfplay_history: int = 4,
     ) -> None:
@@ -25,6 +26,7 @@ class Manager:
         self.game_config = game_config
         self.selfplay_config = selfplay_config
         self.training_config = training_config
+        self.model_config = model_config
 
         self.environment = environment
         self.representation = representation
@@ -41,7 +43,8 @@ class Manager:
             # If it is the first iteration, we need to initialize a model
             # TODO: add upstream model params
             current_model = QuoridorModel(self.device, self.game_config,
-                                          self.representation)
+                                          self.representation,
+                                          self.model_config)
             if i > 0:
                 # For now, we are just loading the state_dict of the past model
                 current_model.load_state_dict(self.models[i - 1].state_dict())

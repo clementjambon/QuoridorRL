@@ -44,7 +44,7 @@ def get_parser() -> ArgumentParser:
     model_group.add_argument(
         '--nb_filters',
         type=int,
-        default=128,
+        default=64,
         help='number of filters used in convolutions for the model')
     model_group.add_argument(
         '--nb_residual_blocks',

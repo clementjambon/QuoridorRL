@@ -8,7 +8,7 @@ sys.path.insert(
 import torch
 
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
-from alphazero import QuoridorRepresentation, QuoridorModel, TrainingConfig, SelfPlayConfig, Manager
+from alphazero import QuoridorRepresentation, QuoridorModel, TrainingConfig, SelfPlayConfig, Manager, ModelConfig
 from alphazero.pipeline import get_parser
 
 if __name__ == "__main__":
@@ -38,12 +38,14 @@ if __name__ == "__main__":
     representation = QuoridorRepresentation(
         game_config, time_consistency=args.time_consistency)
 
+    model_config = ModelConfig(nb_filters=args.nb_filters,
+                               nb_residual_blocks=args.nb_residual_blocks)
+
     init_model = QuoridorModel(device,
                                game_config,
                                representation,
                                load_dir=args.model_path,
-                               nb_filters=args.nb_filters,
-                               nb_residual_blocks=args.nb_residual_blocks)
+                               model_config=model_config)
     init_model = init_model.to(device)
 
     if args.output_dir is None:
@@ -80,6 +82,7 @@ if __name__ == "__main__":
                       representation=representation,
                       save_dir=dir_path,
                       selfplay_config=selfplay_config,
-                      training_config=training_config)
+                      training_config=training_config,
+                      model_config=model_config)
 
     manager.iterate()

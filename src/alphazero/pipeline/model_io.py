@@ -14,7 +14,7 @@ sys.path.insert(
 from environment import QuoridorEnv, QuoridorState, QuoridorConfig
 from interactive import CELL_SIZE, INNER_CELL_SIZE, EMPTY_CELL_COLOR, PAWN_0_COLOR, PAWN_1_COLOR, SIZE, WALL_THICKNESS, FPS, WALL_COLOR
 from interactive import draw_gui, draw_board, draw_state
-from alphazero import QuoridorModel, QuoridorRepresentation, MCTS
+from alphazero import QuoridorModel, QuoridorRepresentation, MCTS, ModelConfig
 from alphazero.pipeline import get_parser
 
 
@@ -126,12 +126,13 @@ def main():
     state = QuoridorState(game_config)
 
     # Load the model against which we want to play
+    model_config = ModelConfig(nb_filters=args.nb_filters,
+                               nb_residual_blocks=args.nb_residual_blocks)
     model = QuoridorModel(device,
                           game_config,
                           representation,
                           load_dir=args.model_path,
-                          nb_filters=args.nb_filters,
-                          nb_residual_blocks=args.nb_residual_blocks)
+                          model_config=model_config)
     model = model.to(device)
 
     # Initialize the feature planes that are generated from each visited state

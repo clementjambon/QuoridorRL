@@ -10,8 +10,24 @@ from alphazero import QuoridorRepresentation
 from environment import QuoridorConfig
 
 
-class ResidualBlock(nn.Module):
+class ModelConfig:
+    def __init__(
+        self,
+        nb_residual_blocks=9,
+        nb_filters=64,
+        kernel_size=3,
+        stride=1,
+    ) -> None:
+        self.nb_residual_blocks = nb_residual_blocks
+        self.nb_filters = nb_filters
+        self.kernel_size = kernel_size
+        self.stride = stride
 
+    def description(self) -> str:
+        return f"ModelConfig: nb_residual_blocks={self.nb_residual_blocks}; nb_filters={self.nb_filters}; kernel_size={self.kernel_size}; stride={self.stride};"
+
+
+class ResidualBlock(nn.Module):
     def __init__(self, nb_filters: int, kernel_size: int, stride: int) -> None:
         super().__init__()
         self.conv1 = nn.Conv2d(nb_filters,
@@ -42,7 +58,6 @@ class ResidualBlock(nn.Module):
 
 
 class FlatPolicyHead(nn.Module):
-
     def __init__(self, nb_filters: int, grid_size: int,
                  nb_actions: int) -> None:
         super().__init__()
@@ -73,13 +88,11 @@ class FlatPolicyHead(nn.Module):
 
 
 class SquarePolicyHead(nn.Module):
-
     def __init__(self) -> None:
         super().__init__()
 
 
 class ValueHead(nn.Module):
-
     def __init__(self, nb_filters: int, grid_size: int) -> None:
         super().__init__()
         self.grid_size = grid_size
@@ -108,23 +121,21 @@ class ValueHead(nn.Module):
 
 
 class QuoridorModel(nn.Module):
-
     def __init__(self,
                  device,
                  game_config: QuoridorConfig,
                  representation: QuoridorRepresentation,
-                 nb_residual_blocks=9,
-                 nb_filters=64,
-                 kernel_size=3,
-                 stride=1,
+                 model_config: ModelConfig,
                  load_dir: str = None) -> None:
         super().__init__()
 
         self.device = device
 
         self.grid_size = game_config.grid_size
-        self.nb_residual_blocks = nb_residual_blocks
-        self.nb_filters = nb_filters
+        self.nb_residual_blocks = model_config.nb_residual_blocks
+        self.nb_filters = model_config.nb_filters
+        self.kernel_size = model_config.kernel_size
+        self.stride = model_config.stride
 
         self.nb_channels = representation.time_consistency * representation.nb_features + representation.nb_constants
 
@@ -132,24 +143,24 @@ class QuoridorModel(nn.Module):
 
         # Input
         self.conv1 = nn.Conv2d(in_channels=self.nb_channels,
-                               out_channels=nb_filters,
-                               kernel_size=kernel_size,
-                               stride=stride,
+                               out_channels=self.nb_filters,
+                               kernel_size=self.kernel_size,
+                               stride=self.stride,
                                padding="same")
-        self.bn1 = nn.BatchNorm2d(nb_filters)
+        self.bn1 = nn.BatchNorm2d(self.nb_filters)
 
         # Residual tower
         self.residual_blocks = nn.ModuleList([
-            ResidualBlock(nb_filters, kernel_size, stride)
+            ResidualBlock(self.nb_filters, self.kernel_size, self.stride)
             for _ in range(self.nb_residual_blocks)
         ])
 
         # Policy head (the output is now (grid_size-1)x(grid_size-1)x2 for walls and grid_sizexgrid_size for pawn moves)
-        self.policy_head = FlatPolicyHead(nb_filters, self.grid_size,
+        self.policy_head = FlatPolicyHead(self.nb_filters, self.grid_size,
                                           game_config.nb_actions)
 
         # Value head
-        self.value_head = ValueHead(nb_filters, self.grid_size)
+        self.value_head = ValueHead(self.nb_filters, self.grid_size)
 
         # Meta data
         self.id = uuid.uuid1()
