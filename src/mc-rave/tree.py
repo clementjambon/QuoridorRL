@@ -1,8 +1,9 @@
 from collections import defaultdict
 import numpy as np
 from tqdm import trange
+from copy import deepcopy
 
-from utils import get_offset
+# from utils import get_offset
 
 
 class MCTSNode():
@@ -34,13 +35,19 @@ class MCTSNode():
     def untried_actions(self):
         # print('looking for untried actions')
         self._untried_actions = self.env.get_possible_actions(self.state)
+        # actions = []
+        # for action in self._untried_actions:
+        #     if action.type == 0:
+        #         # print("untried action:" + str(action.player_pos))
+        #         actions.append(action)
+        # self._untried_actions = actions
         return self._untried_actions
 
     def q(self):
         winning = self._results[1]
         loosing = self._results[-1]
-        q_mc = (winning - loosing) / self.n()
-        q_amaf = self._outcome_parent_action / self._nb_parent_action
+        q_mc = -1 * (winning - loosing) / self.n()
+        q_amaf = -1 * self._outcome_parent_action / self._nb_parent_action
         beta = np.sqrt(1000.0 / (3 * self.n() + 1000.0))
         return (1 - beta) * q_mc + beta * q_amaf
 
@@ -61,10 +68,14 @@ class MCTSNode():
         return child_node
 
     def is_leaf(self):
+        # print('depth ' + str(self.depth))
+        # print("Position of PLAYER 0: " + str(self.state.player_positions[0]))
+        # print("Position of PLAYER 1: " + str(self.state.player_positions[1]))
+        # print(self.state.to_string() + str(self.env.is_game_over(self.state)))
         return self.env.is_game_over(self.state)
 
     def rollout(self):
-        current_rollout_state = self.state
+        current_rollout_state = deepcopy(self.state)
         player = self.player_idx
         actions = []
         while not (current_rollout_state.done
@@ -73,6 +84,11 @@ class MCTSNode():
             #       str(current_rollout_state.player_positions[player]))
             possible_actions = self.env.get_possible_actions(
                 current_rollout_state)
+            actions = []
+            for action in possible_actions:
+                if action.type == 0:
+                    actions.append(action)
+            possible_actions = actions
             action = self.rollout_policy(possible_actions,
                                          current_rollout_state)
             current_rollout_state = self.env.actNoCopy(current_rollout_state,
@@ -110,6 +126,7 @@ class MCTSNode():
             self.parent.backpropagate(-1 * result, actions)
 
     def is_fully_expanded(self):
+        # print(str(len(self._untried_actions)) + " untried actions")
         return len(self._untried_actions) == 0
 
     def best_child(self, c=0.1):
@@ -128,12 +145,11 @@ class MCTSNode():
         """
         # for action in possible_actions:
         #     if action.type == 0:
-        #         offset = get_offset(
-        #             self.state.player_positions[action.player_idx],
-        #             action.player_pos)
+        #         offset = action.player_pos[1] - self.state.player_positions[
+        #             action.player_idx][1]
         #         if (action.player_idx == 0
-        #                 and offset[0] > 0) or (action.player_idx == 1
-        #                                        and offset[0] < 0):
+        #                 and offset > 0) or (action.player_idx == 1
+        #                                     and offset < 0):
         #             # print(self.state.x_targets[action.player_idx] -
         #             #       self.state.player_positions[action.player_idx][0])
         #             return action
@@ -150,13 +166,19 @@ class MCTSNode():
                 # print('expansion')
                 return node.expand()
             else:
-                # print('leaf!')
-                node = node.best_child()
+                # print('best child')
+                node = node.best_child(c=100.)
+                # print(node.depth)
+                # print("NO EXPANSION")
+                # print("Position of PLAYER 0: " +
+                #       str(node.state.player_positions[0]))
+                # print("Position of PLAYER 1: " +
+                #       str(node.state.player_positions[1]))
         return node
 
     def best_action(self):
         # print('looking for best action')
-        for i in range(10):
+        for i in trange(100):
             node = self._tree_policy()
             # print(self.children)
             # print('tree policy done')
@@ -170,4 +192,16 @@ class MCTSNode():
             # print('backpropagation done')
         # print('out for')
         # print(self.children)
+        print(self._results[1])
+        print(self._results[-1])
+        print(self.n())
+        node = self
+        while len(node.children) > 0:
+            print(node.depth, node.children)
+            node = node.children[0]
         return self.best_child(c=0.).parent_action
+
+    def max_depth(self):
+        if len(self.children) == 0:
+            return 0
+        return 1 + np.max([child.max_depth() for child in self.children])

@@ -105,3 +105,22 @@ def draw_debug_offsets(screen, game_config: QuoridorConfig, player_pos,
             elif forbidden_wall_direction == 1:
                 draw_vertical_wall(screen, forbidden_vertical_wall,
                                    wall_position[0], wall_position[1])
+
+
+def draw_debug_adjacent(screen: pg.Surface, wall_position, wall_direction: int,
+                        horizontal_wall: pg.Surface,
+                        vertical_wall: pg.Surface):
+    # DEBUG
+    OFFSETS_X = (((-2, 0), 0), ((2, 0), 0), ((-1, -1), 1), ((0, -1), 1),
+                 ((1, -1), 1), ((-1, 1), 1), ((0, 1), 1), ((1, 1), 1))
+    OFFSETS_Y = (((0, -2), 1), ((0, 2), 1), ((-1, -1), 0), ((-1, 0), 0),
+                 ((-1, 1), 0), ((1, -1), 0), ((1, 0), 0), ((1, 1), 0))
+
+    for offset, adj_dir in (OFFSETS_X if wall_direction == 0 else OFFSETS_Y):
+        new_pos = add_offset(wall_position, offset)
+        if adj_dir == 0:
+            draw_horizontal_wall(screen, horizontal_wall, new_pos[0],
+                                 new_pos[1], (255, 0, 0))
+        else:
+            draw_vertical_wall(screen, vertical_wall, new_pos[0], new_pos[1],
+                               (255, 0, 0))

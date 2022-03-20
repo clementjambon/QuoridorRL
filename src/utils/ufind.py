@@ -5,7 +5,6 @@
 
 # Basic union-find structure with parents flattening for O(1) queries
 class UnionFind:
-
     def __init__(self, nb_elements: int) -> None:
         self.parents = [i for i in range(nb_elements)]
 

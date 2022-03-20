@@ -84,23 +84,67 @@ def draw_board(screen: pg.Surface, game_config: QuoridorConfig,
             screen.blit(cell, pixel_coord)
 
 
-def draw_horizontal_wall(screen: pg.Surface, horizontal_wall: pg.Surface,
-                         i: int, j: int) -> None:
+CC_COLOR_LIST = [(128, 0, 0), (0, 255, 0), (0, 255, 255), (138, 43, 226),
+                 (220, 20, 60), (0, 255, 255), (255, 140, 0), (143, 188, 143),
+                 (255, 20, 147), (255, 215, 0), (75, 0, 130), (46, 139, 87),
+                 (0, 0, 128)]
+
+
+def draw_walls(screen,
+               game_config: QuoridorConfig,
+               state: QuoridorState,
+               horizontal_wall: pg.Surface,
+               vertical_wall: pg.Surface,
+               display_cc=False):
+    # Draw walls
+    for i in range(0, game_config.grid_size - 1):
+        for j in range(0, game_config.grid_size - 1):
+            color = WALL_COLOR
+            if display_cc:
+                color = CC_COLOR_LIST[state.ufind.get_wall_cc(
+                    (i, j), state.walls[i, j]) % len(CC_COLOR_LIST)]
+            # Draw horizontal wall (i.e along x)
+            if (state.walls[i, j] == 0):
+                draw_horizontal_wall(screen,
+                                     horizontal_wall,
+                                     i,
+                                     j,
+                                     color=color)
+            # Draw vertical wall (i.e along y)
+            elif (state.walls[i, j] == 1):  # Draw vertical wall
+                draw_vertical_wall(screen, vertical_wall, i, j, color=color)
+
+
+def draw_horizontal_wall(screen: pg.Surface,
+                         horizontal_wall: pg.Surface,
+                         i: int,
+                         j: int,
+                         color: pg.Color = WALL_COLOR) -> None:
     wall_position = (CELL_PADDING + i * CELL_SIZE,
                      CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * j)
+    horizontal_wall.fill(color if color is not None else WALL_COLOR)
     screen.blit(horizontal_wall, wall_position)
 
 
-def draw_vertical_wall(screen: pg.Surface, vertical_wall: pg.Surface, i: int,
-                       j: int) -> None:
+def draw_vertical_wall(screen: pg.Surface,
+                       vertical_wall: pg.Surface,
+                       i: int,
+                       j: int,
+                       color: pg.Color = WALL_COLOR) -> None:
     wall_position = (CELL_PADDING + INNER_CELL_SIZE + CELL_SIZE * i,
                      CELL_PADDING + j * CELL_SIZE)
+    vertical_wall.fill(color if color is not None else WALL_COLOR)
     screen.blit(vertical_wall, wall_position)
 
 
-def draw_state(screen, game_config: QuoridorConfig, state: QuoridorState,
-               pawn_0: pg.Surface, pawn_1: pg.Surface,
-               horizontal_wall: pg.Surface, vertical_wall: pg.Surface) -> None:
+def draw_state(screen,
+               game_config: QuoridorConfig,
+               state: QuoridorState,
+               pawn_0: pg.Surface,
+               pawn_1: pg.Surface,
+               horizontal_wall: pg.Surface,
+               vertical_wall: pg.Surface,
+               display_cc=False) -> None:
     # Draw pawn 0
     pawn_0_position = state.player_positions[0]
     pawn_0_position = (pawn_0_position[0] * CELL_SIZE + CELL_PADDING,
@@ -113,11 +157,5 @@ def draw_state(screen, game_config: QuoridorConfig, state: QuoridorState,
     screen.blit(pawn_1, pawn_1_position)
 
     # Draw walls
-    for i in range(0, game_config.grid_size - 1):
-        for j in range(0, game_config.grid_size - 1):
-            # Draw horizontal wall (i.e along x)
-            if (state.walls[i, j] == 0):
-                draw_horizontal_wall(screen, horizontal_wall, i, j)
-            # Draw vertical wall (i.e along y)
-            elif (state.walls[i, j] == 1):  # Draw vertical wall
-                draw_vertical_wall(screen, vertical_wall, i, j)
+    draw_walls(screen, game_config, state, horizontal_wall, vertical_wall,
+               display_cc)

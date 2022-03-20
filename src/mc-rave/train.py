@@ -29,14 +29,19 @@ def main():
     rendering = True
     print('rendering')
     i = 0
+    root = MCTSNode(environment, state, state.current_player)
     while i < 100 and not state.done:
         print("Round " + str(i))
         i += 1
         print(state.to_string(False, True, True))
         # act
         # print('acting')
-        root = MCTSNode(environment, state, state.current_player)
+        # root = MCTSNode(environment, state, state.current_player)
         action = root.best_action()
+        for child in root.children:
+            if child.parent_action == action:
+                root = child
+                break
         # print('acting... type ' + str(action.type))
         environment.actNoCopy(state, action)
         print("Position of PLAYER 0: " + str(state.player_positions[0]))
