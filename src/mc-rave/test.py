@@ -21,20 +21,6 @@ def handle_click(environment: QuoridorEnv, state: QuoridorState,
     if state.done:
         return None
 
-    # if state.current_player == 1:
-    #     # root = MCTSNode(environment, state, state.current_player)
-    #     action = root.best_action()
-    #     for child in root.children:
-    #         if child.parent_action == action:
-    #             root = child
-    #             break
-    #     # print('acting.
-    #     # print('acting... type ' + str(action.type))
-    #     environment.actNoCopy(state, action)
-    #     print("Position of PLAYER 0: " + str(state.player_positions[0]))
-    #     print("Position of PLAYER 1: " + str(state.player_positions[1]))
-    #     return
-
     mouse_pos = pg.mouse.get_pos()
     action_taken = None
     if action_mode == 0:
@@ -109,13 +95,11 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT or event.type == pg.K_ESCAPE:
                 rendering = False
-            # TODO: handle key down
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if state.current_player == 1:
                     if not root:
                         root = MCTSNode(environment, state,
                                         state.current_player)
-                    print('max depth: ' + str(root.max_depth()))
                     action = root.best_action()
                     exists = False
                     for child in root.children:
@@ -123,9 +107,6 @@ def main():
                             root = child
                             exists = True
                             break
-                    # print("exists: " + str(exists))
-                    # print("new root depth: " + str(root.depth))
-                    # print(action.player_pos)
                     environment.actNoCopy(state, action)
                     if not exists:
                         root = MCTSNode(environment, state,
@@ -150,9 +131,6 @@ def main():
                     if not exists:
                         root = MCTSNode(environment, state,
                                         state.current_player)
-                    # print("exists: " + str(exists))
-                    # print("new root depth: " + str(root.depth))
-                    # print(action.player_pos)
             elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 action_mode = (action_mode + 1) % 3
         # draw
